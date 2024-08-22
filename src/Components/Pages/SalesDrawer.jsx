@@ -37,9 +37,9 @@ const SalesDrawer = ({ open, onClose, refreshData }) => {
   const token = Cookies.get('token')
   const Profile = localStorage.getItem('user')
   const NewProfile = JSON.parse(Profile)
-  const useName = NewProfile.name
-  const useEmail = NewProfile.email
-  const user_id = NewProfile._id
+  const useName = NewProfile?.name
+  const useEmail = NewProfile?.email
+  const user_id = NewProfile?._id
   console.log('NewProfile', NewProfile)
   const [isOpen, setIsOpen] = useState(true)
   const toggle = () => setIsOpen(!isOpen)
@@ -92,7 +92,7 @@ const SalesDrawer = ({ open, onClose, refreshData }) => {
       refreshData()
 
       const noti = {
-        message: `${NewProfile.name} created a sale: ${name}`,
+        message: `${NewProfile?.name} created a sale: ${name}`,
       }
       await axios.post(`${import.meta.env.VITE_BACKEND_API}/notification`, noti)
     } catch (error) {

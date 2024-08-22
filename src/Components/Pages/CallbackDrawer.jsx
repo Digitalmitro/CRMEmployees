@@ -54,9 +54,9 @@ const [calldate, setCalldate] = useState('')
 const Profile = localStorage.getItem('user')
 const NewProfile = JSON.parse(Profile)
 // console.log("name",NewProfile.name);
-const useName = NewProfile.name
-const useEmail = NewProfile.email
-const user_id = NewProfile._id
+const useName = NewProfile?.name
+const useEmail = NewProfile?.email
+const user_id = NewProfile?._id
 console.log('NewProfile', NewProfile)
 
 const toggle = () => setIsOpen(!isOpen)
@@ -103,7 +103,7 @@ const handelSubmit = async (e) => {
           refreshData()
 
         const noti = {
-            message: `${NewProfile.name} created a callback: ${name}`,
+            message: `${NewProfile?.name} created a callback: ${name}`,
             currentDate:moment().format('MMMM Do YYYY, h:mm:ss a')
         }
         await axios.post(`${import.meta.env.VITE_BACKEND_API}/notification`, noti)

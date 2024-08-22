@@ -26,7 +26,7 @@ const EmpAttendanceList = () => {
 
   const Profile = localStorage.getItem('user')
   const NewProfile = JSON.parse(Profile)
-  const user_id = NewProfile._id
+  const user_id = NewProfile?._id
 
   const [attendanceData, setAttendanceData] = useState([])
   console.log("userid",user_id)

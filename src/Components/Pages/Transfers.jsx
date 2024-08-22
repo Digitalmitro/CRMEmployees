@@ -36,9 +36,9 @@ const Transfers = () => {
   const token = Cookies.get('token')
   const Profile = localStorage.getItem('user')
   const NewProfile = JSON.parse(Profile)
-  const user_id = NewProfile._id
-  const user_name = NewProfile.name
-  const aliceName = NewProfile.aliceName
+  const user_id = NewProfile?._id
+  const user_name = NewProfile?.name
+  const aliceName = NewProfile?.aliceName
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState('Date') // Default sorting by Date
   const [data, setData] = useState([])
@@ -89,7 +89,7 @@ const Transfers = () => {
       })
 
     const noti = {
-      message: `${NewProfile.name} created a callback: ${userData.name}`,
+      message: `${NewProfile?.name} created a callback: ${userData.name}`,
       currentDate:moment().format('MMMM Do YYYY, h:mm:ss a')
     }
     await axios.post(`${import.meta.env.VITE_BACKEND_API}/notification`, noti)
@@ -119,7 +119,7 @@ const Transfers = () => {
       })
 
     const noti = {
-      message: `${NewProfile.name} created a sale: ${userData.name}`,
+      message: `${NewProfile?.name} created a sale: ${userData.name}`,
       currentDate:moment().format('MMMM Do YYYY, h:mm:ss a')
     }
     await axios.post(`${import.meta.env.VITE_BACKEND_API}/notification`, noti)

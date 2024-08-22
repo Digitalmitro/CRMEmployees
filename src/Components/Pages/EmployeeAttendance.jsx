@@ -212,12 +212,12 @@ const EmployeeAttendance = () => {
       name,
       email,
       message,
-      date: msgDate,
+      date: moment().format('MMMM Do YYYY, h:mm:ss a'),
       status: "Pending",
       user_id,
     }
     try {
-      const res = await axios.post(`${import.meta.env.VITE_BACKEND_API}/message`, payload)
+      const res = await axios.post(`${import.meta.env.VITE_BACKEND_API}/concern`, payload)
       toast.info(res.data, {})
     } catch (error) { }
   }
@@ -232,7 +232,7 @@ const EmployeeAttendance = () => {
       user_id,
     }
     try {
-      const res = await axios.post(`${import.meta.env.VITE_BACKEND_API}/message`, payload)
+      const res = await axios.post(`${import.meta.env.VITE_BACKEND_API}/concern`, payload)
       toast.info(res.data, {})
     } catch (error) { }
   }

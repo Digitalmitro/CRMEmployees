@@ -38,9 +38,9 @@ const TransferDrawer = ({ open, onClose, refreshData }) => {
     const token = Cookies.get('token')
     const Profile = localStorage.getItem('user')
     const NewProfile = JSON.parse(Profile)
-    const useName = NewProfile.name
-    const useEmail = NewProfile.email
-    const user_id = NewProfile._id
+    const useName = NewProfile?.name
+    const useEmail = NewProfile?.email
+    const user_id = NewProfile?._id
     console.log('NewProfile', NewProfile)
     const [isOpen, setIsOpen] = useState(true)
     const toggle = () => setIsOpen(!isOpen)
@@ -93,7 +93,7 @@ const TransferDrawer = ({ open, onClose, refreshData }) => {
             refreshData()
 
             const noti = {
-                message: `${NewProfile.name} created a transfer: ${name}`,
+                message: `${NewProfile?.name} created a transfer: ${name}`,
                 currentDate:moment().format('MMMM Do YYYY, h:mm:ss a')
             }
             await axios.post(`${import.meta.env.VITE_BACKEND_API}/notification`, noti)

@@ -4,9 +4,9 @@ import axios from 'axios'
 const EmployeeNotes = () => {
     const Profile = localStorage.getItem('user')
     const NewProfile = JSON.parse(Profile)
-    const name = NewProfile.name
-    const email = NewProfile.email
-    const user_id = NewProfile._id
+    const name = NewProfile?.name
+    const email = NewProfile?.email
+    const user_id = NewProfile?._id
     const [notes, setNotes] = useState('')
   
     useEffect(() => {

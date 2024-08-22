@@ -51,9 +51,13 @@ function App() {
     breadcrumbs,
     setBreadcrumbs,
   };
+
+  
   // useEffect(()=>{
   //   alert(toggleSidebar)
   // },[toggleSidebar])
+
+
   return (
    <>
     <MyContext.Provider value={value}>
@@ -65,7 +69,7 @@ function App() {
           <div className={`sidebar-wrapper ${toggleSidebar === true ? "toggle" : ""} `}>
             <Sidebar />
           </div>
-          <div className={`main-content ${toggleSidebar === true ? "toggle" : ""}`} style={{marginTop:"4rem",marginLeft:"-2rem"}}>
+          <div className={`main-content ${toggleSidebar === true ? "toggle" : ""}`} style={{marginLeft:"-2rem"}}>
             <BreadcrumbsComponent breadcrumbs={breadcrumbs}  />
             <Routes>
               <Route path={"/"} element={<Dashboard />} />

@@ -41,7 +41,7 @@ const SalesViewEdit = () => {
   const { id } = useParams();
   const Profile = localStorage.getItem("user");
   const NewProfile = JSON.parse(Profile);
-  const user_id = NewProfile._id;
+  const user_id = NewProfile?._id;
   console.log("NewProfile", NewProfile);
   const [isOpen, setIsOpen] = useState(true);
   const toggle = () => setIsOpen(!isOpen);

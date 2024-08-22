@@ -30,9 +30,9 @@ import SalesDrawer from "./SalesDrawer";
 const EmployeeSales = () => {
     const Profile = localStorage.getItem('user')
     const NewProfile = JSON.parse(Profile)
-    const user_id = NewProfile._id
-    const user_name = NewProfile.name
-    const aliceName = NewProfile.aliceName
+    const user_id = NewProfile?._id
+    const user_name = NewProfile?.name
+    const aliceName = NewProfile?.aliceName
     const navigate = useNavigate()
     const [searchTerm, setSearchTerm] = useState('')
     const [sortBy, setSortBy] = useState('Date') // Default sorting by Date
