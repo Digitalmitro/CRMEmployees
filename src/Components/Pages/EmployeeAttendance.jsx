@@ -212,7 +212,7 @@ const EmployeeAttendance = () => {
       name,
       email,
       message,
-      date: moment().format('MMMM Do YYYY, h:mm:ss a'),
+      date: moment().format('MMMM Do YYYY'),
       status: "Pending",
       user_id,
     }
