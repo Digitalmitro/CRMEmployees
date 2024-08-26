@@ -29,8 +29,8 @@ const EmployeeNotes = () => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_BACKEND_API}/notepad/${user_id}`);
       console.log("nts",res.data);
-      setApiNotes(res.data.notes.notes); // Set notes fetched from API
-      setNotes(res.data.notes.notes); // Set the initial notes value
+      setApiNotes(res.data.notes.notes); 
+      setNotes(res.data.notes.notes); 
     } catch (error) {
       console.log(error);
     }
@@ -45,7 +45,7 @@ const EmployeeNotes = () => {
           user_id,
         };
         const res = await axios.post(`${import.meta.env.VITE_BACKEND_API}/notepad`, payload);
-        console.log(res.data); // Log the response if needed
+        console.log(res.data); 
       } catch (error) {
         console.log(error);
       }
@@ -82,10 +82,10 @@ const EmployeeNotes = () => {
         </div>
         <div className="emp-notepad">
           {/* Display notes fetched from API */}
-          <div className="notes-display" style={{ marginBottom: "20px", padding: "10px", background: "#e9ecef", boxShadow: "0 0 5px #ccc" }}>
+          {/* <div className="notes-display" style={{ marginBottom: "20px", padding: "10px", background: "#e9ecef", boxShadow: "0 0 5px #ccc" }}>
             <h6>Fetched Notes</h6>
             <p>{apiNotes}</p>
-          </div>
+          </div> */}
           {/* Textarea for editing notes */}
           <textarea
             type="text"
