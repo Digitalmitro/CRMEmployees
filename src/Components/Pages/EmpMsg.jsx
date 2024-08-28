@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Input, Button, Spin, List, Avatar } from "antd";
 import io from "socket.io-client";
@@ -10,8 +10,11 @@ const ENDPOINT = import.meta.env.VITE_BACKEND_API; // Update with your server en
 let socket;
 
 const EmpMsg = () => {
-  const token = Cookies.get("token");
-  const decodeToken = token && jwtDecode(token);
+
+  const messagesEndRef = useRef(null); 
+
+  const userToken = Cookies.get("userToken");
+  const decodeToken = userToken && jwtDecode(userToken);
   const userId = decodeToken._id;
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -31,6 +34,21 @@ const EmpMsg = () => {
     status: "",
     user_id: userId,
   });
+
+
+
+  
+  // Scroll to the bottom function
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+  useEffect(() => {
+    scrollToBottom(); // Scroll to bottom on page load or when messages change
+  }, [messages]);
+
+
 
   // Establish socket connection only when an employee is selected
   useEffect(() => {
@@ -83,7 +101,7 @@ const EmpMsg = () => {
       )
       .then((res) => {
         const chatData = res.data.chatData;
-
+              console.log(chatData, "chatData")
         if (chatData.length > 0) {
           setMessages(res.data.chatData[0].messages);
         } else {
@@ -92,15 +110,18 @@ const EmpMsg = () => {
       })
       .finally(() => {
         setLoading(false);
+        scrollToBottom();
       })
       .catch((err) => {
         console.log(err);
       });
   };
+  console.log("messages", messages)
 
   useEffect(() => {
       getChatData(formData.user_id);
   }, [formData.user_id]);
+
 
 
   const typingHandler = (e) => {
@@ -176,6 +197,7 @@ const EmpMsg = () => {
                 messages?.map((item, index) => {
                   console.log(item);
                   return (
+                    <>
                     <div
                       key={index}
                       className={
@@ -192,9 +214,14 @@ const EmpMsg = () => {
                       <p style={styles.senderName}>
                         <strong>{item.name}</strong>
                       </p>
-                      <p style={styles.messageText}>{item.message}</p>
-                      <p style={styles.messageTime}>{item.time}</p>
+                     {/* <div  className="d-flex align-items-end gap-2 justify-content-between"> */}
+                     <p style={styles.messageText}>{item.message}</p>
+                     <p style={styles.messageTime}>{item.time}</p>
+                     {/* </div> */} 
                     </div>
+                    <div ref={messagesEndRef} /> 
+
+                    </>
                   );
                 })
               )}
@@ -217,6 +244,7 @@ const EmpMsg = () => {
               </Button>
             </div>
           </> 
+          <div ref={messagesEndRef} /> 
       </div>
     </div>
   );
@@ -225,7 +253,7 @@ const EmpMsg = () => {
 const styles = {
   chatApp: {
     display: "flex",
-    height: "100vh",
+    height: "100vh !important",
     backgroundColor: "#f5f5f5",
   },
   sidebar: {
@@ -235,8 +263,8 @@ const styles = {
     borderRight: "1px solid #e0e0e0",
     display: "flex",
     flexDirection: "column",
-    height: "100vh", // Fixed height for the sidebar
-    overflowY: "auto", // Enable scrolling
+    height: "100vh",
+    overflowY: "auto",
   },
   searchBar: {
     marginBottom: "20px",
@@ -251,18 +279,22 @@ const styles = {
   chatContainer: {
     display: "flex",
     flexDirection: "column",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
     flexGrow: 1,
     padding: "20px",
     backgroundColor: "#f5f5f5",
+    height:"80vh",
   },
   messagesContainer: {
     display: "flex",
     flexDirection: "column",
     overflowY: "auto",
+    overflowX:"hidden",
     padding: "10px",
     marginBottom: "20px",
-    maxHeight: "80vh",
+    scrollbarWidth: "thin",
+    scrollbarColor: "#888 #f1f1f1",
+    maxHeight: "calc(100vh - 150px)", // Adjust height based on the input field
   },
   spinner: {
     alignSelf: "center",
@@ -275,27 +307,33 @@ const styles = {
   },
   senderName: {
     margin: 0,
-    fontSize: "0.9rem",
+    // marginRight:".9rem",
+
+    fontSize: "0.8rem",
+    // line
     color: "#424242",
   },
   messageText: {
-    margin: "5px 0",
-    fontSize: "1rem",
+    margin: "2px 0",
+    fontSize: ".9rem",
     color: "#424242",
   },
   messageTime: {
-    fontSize: "0.8rem",
+    fontSize: "0.7rem",
     color: "#757575",
     textAlign: "right",
     margin: 0,
+    
   },
   inputContainer: {
     display: "flex",
     alignItems: "center",
     backgroundColor: "#ffffff",
     borderRadius: "8px",
-    padding: "10px",
+    padding: " 5px 10px",
     boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+    position: "sticky",
+    bottom: 0,
   },
   inputField: {
     flexGrow: 1,
@@ -313,14 +351,7 @@ const styles = {
     color: "#757575",
     marginLeft: "10px",
   },
-  selectEmployeePlaceholder: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    height: "100%",
-    fontSize: "1.2rem",
-    color: "#757575",
-  },
 };
+
 
 export default EmpMsg;

@@ -21,7 +21,12 @@ const Doccs = () => {
   const [docss, setdocss] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [projectsData, setProjectsData] = useState([]);
-  const [docsDatas, setDocsDatas] = useState("");
+  const [docsData, setDocsData] = useState({
+    assigneeName: "",
+    projectName: "",
+    docName: "",
+  });
+  
   const [uploadedDocs, setUploadedDocs] = useState([]);
   const [userdata, setUserData] = useState([]);
   const navigate = useNavigate();
@@ -78,7 +83,11 @@ const Doccs = () => {
 
   const handleSubmit = async () => {
     const formData = new FormData();
-    docsDatas.trim() !== "" && formData.append("docsName", docsDatas);
+
+
+    docsData.assigneeName.trim() !== "" && formData.append("assigneeName", docsData.assigneeName);
+    docsData.projectName.trim() !== "" && formData.append("projectName", docsData.projectName);
+    docsData.docName.trim() !== "" && formData.append("docsName", docsData.docName);
     if (docss) {
       formData.append("docs", docss);
     }
@@ -425,10 +434,39 @@ const Doccs = () => {
               <Form.Item>
                 <Input
                   type="text"
-                  onChange={(e) => setDocsDatas(e.target.value)}
-                  placeholder="Add Doc Name"
+                  onChange={(e) => setDocsData(prevState => ({
+                    ...prevState,
+                    assigneeName: e.target.value,
+                  }))}
+                  placeholder="Add Assignee Name"
+                  value={docsData.assigneeName}
                 />
               </Form.Item>
+              
+              <Form.Item>
+                <Input
+                  type="text"
+                  onChange={(e) => setDocsData(prevState => ({
+                    ...prevState,
+                    projectName: e.target.value,
+                  }))}
+                  placeholder="Add project Name"
+                  value={docsData.taskName}
+                />
+              </Form.Item>
+
+              <Form.Item>
+                <Input
+                  type="text"
+                  onChange={(e) => setDocsData(prevState => ({
+                    ...prevState,
+                    docName: e.target.value,
+                  }))}
+                  placeholder="Add Doc Name"
+                  value={docsData.docName}
+                />
+              </Form.Item>
+
               <Form.Item>
                 <Input
                   type="file"

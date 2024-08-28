@@ -37,7 +37,7 @@ const useStyle = createStyles(() => ({
 const CallbackDrawer = ({open,onClose,refreshData}) => {
     const { styles } = useStyle();
     const navigate = useNavigate()
-const token = Cookies.get('token')
+const userToken = Cookies.get('userToken')
 const [isOpen, setIsOpen] = useState(true)
 const [name, setName] = useState('')
 const [email, setEmail] = useState('')
@@ -54,9 +54,9 @@ const [calldate, setCalldate] = useState('')
 const Profile = localStorage.getItem('user')
 const NewProfile = JSON.parse(Profile)
 // console.log("name",NewProfile.name);
-const useName = NewProfile.name
-const useEmail = NewProfile.email
-const user_id = NewProfile._id
+const useName = NewProfile?.name
+const useEmail = NewProfile?.email
+const user_id = NewProfile?._id
 console.log('NewProfile', NewProfile)
 
 const toggle = () => setIsOpen(!isOpen)
@@ -103,7 +103,7 @@ const handelSubmit = async (e) => {
           refreshData()
 
         const noti = {
-            message: `${NewProfile.name} created a callback: ${name}`,
+            message: `${NewProfile?.name} created a callback: ${name}`,
             currentDate:moment().format('MMMM Do YYYY, h:mm:ss a')
         }
         await axios.post(`${import.meta.env.VITE_BACKEND_API}/notification`, noti)
@@ -113,12 +113,12 @@ const handelSubmit = async (e) => {
     }
 }
 useEffect(() => {
-    if (token) {
+    if (userToken) {
         // Use the <Navigate /> component to redirect
     } else {
         return navigate('/Login')
     }
-}, [country, token])
+}, [country, userToken])
     // const token = useTheme();
 
 
@@ -139,9 +139,9 @@ useEffect(() => {
             boxShadow: '-10px 0 10px #666',
         },
 
-        body: {
-            fontSize: token.fontSizeLG,
-        },
+        // body: {
+        //     fontSize: token.fontSizeLG,
+        // },
 
     };
     return (
@@ -266,13 +266,6 @@ useEffect(() => {
                             </Col>
                         </Row>
 
-                        {/* <Row gutter={16}>
-                            <Col span={22}>
-                                <Form.Item name="strictProject" valuePropName="checked">
-                                    <Checkbox>Make this a strict project</Checkbox>
-                                </Form.Item>
-                            </Col>
-                        </Row> */}
                         <Row gutter={16}>
                             <Col span={22}>
                                 <Form.Item

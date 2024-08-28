@@ -87,7 +87,7 @@ const Dashboard = () => {
           </div>
          
           <div className="Emp-Dash grid8 d-flex align-items-center " style={{boxShadow:" 0 0 5px rgb(179, 170, 170)",justifyContent:"center",width:"200px",borderRadius:"20px",transition:"all 0.3s ease-in-out" }}>
-          <a href="/projects" style={{
+          <a href="/project-lists" style={{
           color:"#222"
          }}>
           <div>

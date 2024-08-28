@@ -39,7 +39,7 @@ function App() {
   const [toggleSidebar, setToggleSidebar] = useState(false);
   const [activeButton,setActiveButton]=useState(0)
 
-  const token = Cookies.get("token");
+  const userToken = Cookies.get("userToken");
   // const token="ddsddefefefefe"
 
   const value = {
@@ -51,13 +51,17 @@ function App() {
     breadcrumbs,
     setBreadcrumbs,
   };
+
+  
   // useEffect(()=>{
   //   alert(toggleSidebar)
   // },[toggleSidebar])
+
+
   return (
    <>
     <MyContext.Provider value={value}>
-    {token ? (
+    {userToken ? (
        <>
         <ToastContainer />
         <Header />
@@ -65,7 +69,7 @@ function App() {
           <div className={`sidebar-wrapper ${toggleSidebar === true ? "toggle" : ""} `}>
             <Sidebar />
           </div>
-          <div className={`main-content ${toggleSidebar === true ? "toggle" : ""}`} style={{marginTop:"4rem",marginLeft:"-2rem"}}>
+          <div className={`main-content ${toggleSidebar === true ? "toggle" : ""}`} style={{marginLeft:"-2rem"}}>
             <BreadcrumbsComponent breadcrumbs={breadcrumbs}  />
             <Routes>
               <Route path={"/"} element={<Dashboard />} />

@@ -38,7 +38,7 @@ const CallbackViewEdit = () => {
     const { styles } = useStyle();
     const navigate = useNavigate()
     const { id } = useParams();
-const token = Cookies.get('token')
+const userToken = Cookies.get('userToken')
 const [isOpen, setIsOpen] = useState(true)
 const [name, setName] = useState('')
 const [email, setEmail] = useState('')
@@ -59,9 +59,9 @@ const [data, setData] = useState([])
 const Profile = localStorage.getItem('user')
 const NewProfile = JSON.parse(Profile)
 // console.log("name",NewProfile.name);
-const useName = NewProfile.name
-const useEmail = NewProfile.email
-const user_id = NewProfile._id
+const useName = NewProfile?.name
+const useEmail = NewProfile?.email
+const user_id = NewProfile?._id
 console.log('NewProfile', NewProfile)
 
 const toggle = () => setIsOpen(!isOpen)
@@ -113,7 +113,7 @@ console.log(id)
 //         //   refreshData()
 
 //           const noti = {
-//               message: `${NewProfile.name} created a callback: ${name}`,
+//               message: `${NewProfile?.name} created a callback: ${name}`,
 //               currentDate:moment().format('MMMM Do YYYY, h:mm:ss a')
 //             }
 //             await axios.post(`${import.meta.env.VITE_BACKEND_API}/notification`, noti)
@@ -160,12 +160,12 @@ const handleUpdate = async (e) => {
 };
 
 useEffect(() => {
-    if (token) {
+    if (userToken) {
         // Use the <Navigate /> component to redirect
     } else {
         return navigate('/Login')
     }
-}, [country, token])
+}, [country, userToken])
     // const token = useTheme();
 
    

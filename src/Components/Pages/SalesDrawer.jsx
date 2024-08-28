@@ -34,12 +34,12 @@ const useStyle = createStyles(() => ({
 const SalesDrawer = ({ open, onClose, refreshData }) => {
     const { styles } = useStyle();
     const navigate = useNavigate()
-  const token = Cookies.get('token')
+  const userToken = Cookies.get('userToken')
   const Profile = localStorage.getItem('user')
   const NewProfile = JSON.parse(Profile)
-  const useName = NewProfile.name
-  const useEmail = NewProfile.email
-  const user_id = NewProfile._id
+  const useName = NewProfile?.name
+  const useEmail = NewProfile?.email
+  const user_id = NewProfile?._id
   console.log('NewProfile', NewProfile)
   const [isOpen, setIsOpen] = useState(true)
   const toggle = () => setIsOpen(!isOpen)
@@ -92,7 +92,7 @@ const SalesDrawer = ({ open, onClose, refreshData }) => {
       refreshData()
 
       const noti = {
-        message: `${NewProfile.name} created a sale: ${name}`,
+        message: `${NewProfile?.name} created a sale: ${name}`,
       }
       await axios.post(`${import.meta.env.VITE_BACKEND_API}/notification`, noti)
     } catch (error) {
@@ -100,12 +100,12 @@ const SalesDrawer = ({ open, onClose, refreshData }) => {
     }
   }
   useEffect(() => {
-    if (token) {
+    if (userToken) {
       // Use the <Navigate /> component to redirect
     } else {
       return navigate('/Login')
     }
-  }, [token])
+  }, [userToken])
   const classNames = {
     body: styles['my-drawer-body'],
     mask: styles['my-drawer-mask'],
@@ -121,10 +121,7 @@ const drawerStyles = {
         boxShadow: '-10px 0 10px #666',
     },
 
-    body: {
-        fontSize: token.fontSizeLG,
-    },
-
+   
 };
     return (
         <div className="drawerPage">

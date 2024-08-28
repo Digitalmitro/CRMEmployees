@@ -81,7 +81,7 @@ width: 100%;
 }
 
 .main .sidebar-wrapper.toggle .sidebar {
-  width: 50px !important;
+  width: 46px !important;
   ;
 }
 
@@ -318,50 +318,6 @@ margin: 3px;
 }
 
 
-@media screen and (max-width:900px) {
-
-
-  .gridtext{
-    display: flex;
-    flex-direction: column;
-    align-items: start !important;
-    justify-content: start !important;
-  }
-  .dashboardhome h5, .dashboardhome h6{
-  font-size:15px;
-  }
-  .hr-breadcum{
-    margin-left: -5px ;
-  }
-}
-@media screen and (max-width:768px) {
-  .hide-ham{
-    display: none !important;
-   
-  }
-  .main .sidebar-wrapper .sidebar {
-    width: 10%;
-  }
-  .hide-sidebar{
-    width: 10%;
-  }
-  .bread-crumb{
-      padding-top: 0.8rem;
-  }
-  .row1{
-    display: flex;
-    justify-content: space-between;
-  }
-  .main .main-content {
-    padding: 0px;
-  }
-  .emp-card{
-    width: 300px !important;
-  }
- .emp-card h6 {
-  font-size: 0.8rem !important;
- }
-}
 /* ---------------Attendance.css------------------- */
 .attendance-container {
   width: 95%;
@@ -998,23 +954,6 @@ tbody tr td {
 
 
 
-
-
-@media screen and (max-width:570px){
-  .emp-select-months-year {
-      width: 90% !important;
-      font-size: 0.8rem !important;
-      /* border: 2px solid red; */
-
-  }
-  .emp-select-month,.emp-select-date {
-      width: 135px !important;
-      padding: 0 !important;
-      z-index: 1 !important;
-      
-  } 
-}
-
 /* ----------calback.css------- */
 .buttonHeading{
   text-align: center;
@@ -1074,12 +1013,7 @@ box-shadow:0 0 2px gray;
 :where(.css-dev-only-do-not-override-1uq9j6g).ant-btn-primary {
   background: #FF560E;
 }
- @media screen and (max-width:768px){
-  .drawerPage{
-    padding: 2px;
-    width: 100% !important;
-  }
- }
+ 
 /* --------common-Drawer.css---------- */
 
 
@@ -1541,4 +1475,238 @@ font-size: 0.8rem;
   color: #fff;
   outline: none;
   border: none;
+}
+
+
+
+@media screen and (max-width:900px) {
+
+
+  .gridtext{
+    display: flex;
+    flex-direction: column;
+    align-items: start !important;
+    justify-content: start !important;
+  }
+  .dashboardhome h5, .dashboardhome h6{
+  font-size:15px;
+  }
+  .hr-breadcum{
+    margin-left: -5px ;
+  }
+
+}
+@media screen and (max-width:768px) {
+  
+  .hide-ham{
+    display: none !important;
+   
+  }
+  .main .sidebar-wrapper .sidebar {
+    width: 10%;
+  }
+  .hide-sidebar{
+    width: 10%;
+  }
+  .bread-crumb{
+      padding-top: 0.8rem;
+  }
+  .row1{
+    display: flex;
+    justify-content: space-between;
+  }
+  .main .main-content {
+    padding: 0px;
+  }
+  .emp-card{
+    width: 300px !important;
+  }
+ .emp-card h6 {
+  font-size: 0.8rem !important;
+ }
+
+ .drawerPage{
+  padding: 2px;
+  width: 100% !important;
+}
+
+
+/* employee filter*/
+
+.emp-select-months-year {
+  width: 90% !important;
+  font-size: 0.8rem !important;
+  /* border: 2px solid red; */
+
+}
+.emp-select-month,.emp-select-date {
+  width: 135px !important;
+  padding: 0 !important;
+  z-index: 1 !important;
+  
+} 
+
+.project-list-container{
+  /* display: flex; */
+  /* width: 90%;
+  flex-direction: column ;
+  justify-content: center;
+  align-items: center; */
+}
+.list-1{
+  max-height: 250px;
+
+}
+
+
+
+.project-list-container{
+  /* display: flex; */
+  margin-top: 10px;
+  width: 90%;
+  flex-direction: column !important;
+  justify-content: center;
+  align-items: center;
+}
+.projects-list-heading{
+  flex-direction: column;
+}
+.add-task button {
+  margin: 5px 1px ;
+  padding: 2px;
+  }
+  
+.projects-list-heading ul {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr; 
+  grid-template-rows: auto auto; 
+  justify-items: stretch;
+  align-items: stretch; 
+  row-gap: 15px;
+  column-gap: 1px;
+}
+
+.add-task button {
+margin: 3px ;
+margin-left: 2.8rem;
+padding: 2px;
+
+}
+
+  .projects-list-heading{
+      /* align-items: end; */
+      width: 120%;
+    }        
+.projects-list-heading ul li:first-child {
+  grid-column: 1 / 3;
+}
+
+
+.filter-selected{
+width: 100px;
+}
+ .list-of-days{
+width: 30% ;
+
+}
+.list-of-days button{
+  padding:0px 10px;
+  /* height: 6vh ; */
+  /* align-items: center; */
+}
+.emp-notepad {
+  width: 90%;
+}
+.project-title{
+  width: 92%;
+}
+
+.emp-holidays-btn {
+  width: 100%;
+  justify-content: flex-end;
+  /* margin: .1rem 10%; */
+}
+.custom-btn {
+font-size: 0.4rem;
+}
+
+
+.emp-card{
+  width: 300px !important;
+}
+.emp-card h6 {
+font-size: 0.8rem !important;
+}
+.attendance-container{
+padding: 10px 2px;
+margin: 0px;
+width: 90%;
+/* border: 1px solid red; */
+}
+.right-emp-calender{
+zoom: 0.8;
+margin: auto;
+width: 90%;
+justify-content: center;
+}
+.emp-card{
+zoom: .9;
+margin: auto;
+}
+
+.task-list-container{
+  max-width: 100vw;
+  overflow-x: scroll;
+  zoom: .8;
+  margin: 5px 0px;
+  padding-left: 0px;
+  margin-right: 1.2rem;
+ }
+ .projects-list-heading{
+  zoom: .8;
+  width: 80%;
+  flex-wrap: wrap;
+  padding-right: 0.4rem;
+  /* border: 1px solid red; */
+ }
+ .add-task{
+  flex: content;
+  padding-left: 1.6rem;
+  /* margin-right: 10px; */
+
+  /* text-align: center; */
+ }
+ .projects-list-heading ul{
+  /* flex-direction: column; */
+  /* border: 1px solid red; */
+  flex-wrap: wrap;
+  /* width: 70% ; */
+ }
+ .project-list-container{
+  width: 90%;
+  flex-wrap: wrap;
+  gap: 30px;
+  height: auto;
+  zoom: .8;
+  padding: 0px;
+  margin: 0px;
+  justify-content: center;
+  /* flex-direction: column; */
+  /* border: 1px solid red; */
+ }
+ .project-title{
+  zoom: .8;
+  width: 85%;
+ }
+ .custom-btn{
+  width: 100% !important;
+ }
+ .table{
+  zoom: 0.8;
+ }
+ .emp-select-months-year{
+  zoom: .8;
+ }
+
 }

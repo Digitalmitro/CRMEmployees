@@ -34,7 +34,7 @@ const UserProfileDrawer = ({ open, onClose }) => {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [type, setType] = useState("Day");
-  const [isToggle, setIsToggle] = useState(false);
+  const [isProfileToggle, setIsProfileToggle] = useState(false);
   const [activeButton, setActiveButton] = useState(0);
 
   const [EmployeeData, setEmployeeData] = useState([]);
@@ -45,10 +45,8 @@ const UserProfileDrawer = ({ open, onClose }) => {
   const handleSubmit = async () => {
     console.log("Backend API URL:", import.meta.env.VITE_BACKEND_API);
     try {
-      console.log("hello22");
 
       await form.validateFields();
-      console.log("hello");
       const payload = {
         name,
         aliceName,
@@ -82,7 +80,7 @@ const UserProfileDrawer = ({ open, onClose }) => {
 
   const handleLogout = async() => {
     localStorage.removeItem("user");
-    Cookies.remove("token");
+    Cookies.remove("userToken");
     onClose()
     // await new Promise((resolve) => setTimeout(resolve, 100));
     navigate("/Login");
@@ -144,8 +142,8 @@ const UserProfileDrawer = ({ open, onClose }) => {
   };
 
   console.log("employeData", EmployeeData);
-  const handleToggle = () => {
-    setIsToggle(!isToggle);
+  const handleProfileToggle = () => {
+    setIsProfileToggle(!isProfileToggle);
   };
 
   useEffect(() => {
@@ -184,7 +182,7 @@ const UserProfileDrawer = ({ open, onClose }) => {
                     color: "#fff",
                     border: "none",
                   }}
-                  onClick={handleToggle}
+                  onClick={handleProfileToggle}
                 >
                   {user?.name && user.name.charAt(0).toUpperCase()}
                 </button>
@@ -201,7 +199,7 @@ const UserProfileDrawer = ({ open, onClose }) => {
                   }}
                   className="mt-2 mx-auto"
                 >
-                  {user?.name && user.name.toUpperCase()}
+                  {user?.name && user?.name.toUpperCase()}
                 </h6>
               </div>
             </div>
