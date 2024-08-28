@@ -12,7 +12,7 @@ import { Stepper, Step, StepLabel, StepContent, TextField, Button } from "@mui/m
 
 const TransferView = () => {
     const navigate = useNavigate()
-  const token = Cookies.get('token')
+  const userToken = Cookies.get('userToken')
   const { id } = useParams()
   const Profile = localStorage.getItem('user')
   const NewProfile = JSON.parse(Profile)
@@ -75,12 +75,12 @@ const handleCancel = () => {
   console.log(data)
   useEffect(() => {
     getData()
-    if (token) {
+    if (userToken) {
       // Use the <Navigate /> component to redirect
     } else {
       return navigate('/Login')
     }
-  }, [token])
+  }, [userToken])
 
   const handleUpdate = async (e) => {
     e.preventDefault()

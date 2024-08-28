@@ -38,7 +38,7 @@ const CallbackViewEdit = () => {
     const { styles } = useStyle();
     const navigate = useNavigate()
     const { id } = useParams();
-const token = Cookies.get('token')
+const userToken = Cookies.get('userToken')
 const [isOpen, setIsOpen] = useState(true)
 const [name, setName] = useState('')
 const [email, setEmail] = useState('')
@@ -160,12 +160,12 @@ const handleUpdate = async (e) => {
 };
 
 useEffect(() => {
-    if (token) {
+    if (userToken) {
         // Use the <Navigate /> component to redirect
     } else {
         return navigate('/Login')
     }
-}, [country, token])
+}, [country, userToken])
     // const token = useTheme();
 
    

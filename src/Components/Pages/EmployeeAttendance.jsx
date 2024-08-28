@@ -20,7 +20,7 @@ import axios from "axios"
 
 
 const EmployeeAttendance = () => {
-  const token = Cookies.get('token')
+  const userToken = Cookies.get('userToken')
   const Profile = localStorage.getItem('user')
   const NewProfile = JSON.parse(Profile)
   const name = NewProfile?.name
@@ -36,7 +36,7 @@ const EmployeeAttendance = () => {
   const [selectedMonth, setSelectedMonth] = useState('')
   const [date, setDate] = useState("")
 
-
+  const [punchStatus, setPunchStatus] = useState("");
 
   //model
   const [msgDate, setMsgDate] = useState('')
@@ -212,7 +212,8 @@ const EmployeeAttendance = () => {
       name,
       email,
       message,
-      date: moment().format('MMMM Do YYYY'),
+      date: moment().format('MMMM Do YYYY, h:mm:ss a'),
+      punchType:punchStatus,
       status: "Pending",
       user_id,
     }
@@ -228,6 +229,7 @@ const EmployeeAttendance = () => {
       email,
       message,
       date: msgDate,
+      
       status: "Pending",
       user_id,
     }
@@ -485,12 +487,12 @@ const EmployeeAttendance = () => {
     if (punchin && punchOut) {
       setTimeDifferenceMinutes(calculateTimeDifference(punchin, punchOut))
     }
-    if (token) {
+    if (userToken) {
       // Use the <Navigate /> component to redirect
     } else {
       return navigate('/Login')
     }
-  }, [token, punchin, punchOut, currentDate, timeDifferenceMinutes, userIP])
+  }, [userToken, punchin, punchOut, currentDate, timeDifferenceMinutes, userIP])
 
   const calculateTimeDifference = (time1, time2) => {
     const format = 'hh:mm:ss A'
@@ -597,11 +599,14 @@ const EmployeeAttendance = () => {
       <div className="container">
         <div className="row">
           <div className="col">
-            <h6>Select Date</h6>
-            <Space direction="vertical" style={{ outline: "none", border: "1px solid #f24e1e" }}>
-              <DatePicker onChange={(e) => setMessage(e.target.value)} />
-
-            </Space>
+           
+            <div className="col">
+            <h6>Punch Status</h6>
+            <select value={punchStatus} onChange={(e) => setPunchStatus(e.target.value)} style={{width:"160px", height:"30px"}}>
+              <option value="Punch In">Punch In</option>
+              <option value="Punch Out">Punch Out</option>
+            </select>
+          </div>
           </div>
           <div className="col">
             <h6>write concern</h6>
@@ -689,10 +694,11 @@ const EmployeeAttendance = () => {
           <div className="calender-title">
             <h5 style={{ fontSize: "18px", fontWeight: "400" }}>Calender</h5>
             <div className="right-calender-title">
-              <h6 style={{ color: "#FF560E", cursor: "pointer" }} onClick={showAttendance}>MONTHLY VIEW</h6>
+              <h6 style={{ color: "#FF560E", cursor: "pointer" , padding:"0px 2rem" }} onClick={showAttendance}>MONTHLY VIEW</h6>
               <a href="/attendance-list" style={{
                 color: "#222"
-              }}><h6>FULL CALENDER</h6></a>
+              }}>
+                <h6>FULL CALENDER</h6></a>
               
             </div>
           </div>

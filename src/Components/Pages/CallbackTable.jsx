@@ -46,7 +46,7 @@ const CallbackTable = () => {
     };
 
 
-    const token = Cookies.get('token')
+    const userToken = Cookies.get('userToken')
     const Profile = localStorage.getItem('user')
     const NewProfile = JSON.parse(Profile)
     const user_id = NewProfile?._id
@@ -112,12 +112,12 @@ const CallbackTable = () => {
     }
     useEffect(() => {
         Getdata()
-        if (token) {
+        if (userToken) {
             // Use the <Navigate /> component to redirect
         } else {
             return navigate('/Login')
         }
-    }, [searchTerm, sortBy, token])
+    }, [searchTerm, sortBy, userToken])
 
     const refreshData = () => {
         Getdata(); // Refresh data function

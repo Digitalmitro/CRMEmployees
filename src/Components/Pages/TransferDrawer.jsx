@@ -35,7 +35,7 @@ const TransferDrawer = ({ open, onClose, refreshData }) => {
     const { styles } = useStyle();
     const navigate = useNavigate()
 
-    const token = Cookies.get('token')
+    const userToken = Cookies.get('userToken')
     const Profile = localStorage.getItem('user')
     const NewProfile = JSON.parse(Profile)
     const useName = NewProfile?.name
@@ -102,12 +102,12 @@ const TransferDrawer = ({ open, onClose, refreshData }) => {
         }
     }
     useEffect(() => {
-        if (token) {
+        if (userToken) {
             // Use the <Navigate /> component to redirect
         } else {
             return navigate('/Login')
         }
-    }, [token])
+    }, [userToken])
     // const token = useTheme();
 
     const classNames = {
@@ -125,9 +125,9 @@ const TransferDrawer = ({ open, onClose, refreshData }) => {
             boxShadow: '-10px 0 10px #666',
         },
 
-        body: {
-            fontSize: token.fontSizeLG,
-        },
+        // body: {
+        //     fontSize: token.fontSizeLG,
+        // },
 
     };
     return (

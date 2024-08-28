@@ -33,7 +33,7 @@ const Transfers = () => {
 
   const navigate = useNavigate()
 
-  const token = Cookies.get('token')
+  const userToken = Cookies.get('userToken')
   const Profile = localStorage.getItem('user')
   const NewProfile = JSON.parse(Profile)
   const user_id = NewProfile?._id
@@ -126,12 +126,12 @@ const Transfers = () => {
   }
   useEffect(() => {
     Getdata()
-    if (token) {
+    if (userToken) {
       // Use the <Navigate /> component to redirect
     } else {
       return navigate('/Login')
     }
-  }, [searchTerm, sortBy, token])
+  }, [searchTerm, sortBy, userToken])
   // Function to handle search term change
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);

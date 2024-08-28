@@ -13,8 +13,8 @@ const EmpMsg = () => {
 
   const messagesEndRef = useRef(null); 
 
-  const token = Cookies.get("token");
-  const decodeToken = token && jwtDecode(token);
+  const userToken = Cookies.get("userToken");
+  const decodeToken = userToken && jwtDecode(userToken);
   const userId = decodeToken._id;
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");

@@ -11,24 +11,24 @@ import logo from "../../assets/logo.png";
 const Login = () => {
   const navigate = useNavigate();
 
-  const token = Cookies.get("token");
+  const userToken = Cookies.get("userToken");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSubmmit = async (e) => {
     e.preventDefault();
-    const credentials = {
+    const payload = {
       email: email,
       password: password,
     };
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_API}/loginuser`,
-        credentials
+        payload,  { withCredentials: true } 
       );
       console.log(response.data);
-      Cookies.set("token", response.data.token);
+      Cookies.set("userToken", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
       toast.success(response.data.status, {});
       setTimeout(() => {
@@ -37,18 +37,18 @@ const Login = () => {
     } catch (error) {
       toast.warning(error.response.data.status, {});
     }
-    if (token) {
+    if (userToken) {
       return <Navigate to="/" />;
     }
   };
   useEffect(() => {
-    if (token) {
+    if (userToken) {
       // Use the <Navigate /> component to redirect
       return navigate("/");
     } else {
       return navigate("/Login");
     }
-  }, [token]);
+  }, [userToken]);
 
   return (
     <>

@@ -39,7 +39,7 @@ function App() {
   const [toggleSidebar, setToggleSidebar] = useState(false);
   const [activeButton,setActiveButton]=useState(0)
 
-  const token = Cookies.get("token");
+  const userToken = Cookies.get("userToken");
   // const token="ddsddefefefefe"
 
   const value = {
@@ -61,7 +61,7 @@ function App() {
   return (
    <>
     <MyContext.Provider value={value}>
-    {token ? (
+    {userToken ? (
        <>
         <ToastContainer />
         <Header />
