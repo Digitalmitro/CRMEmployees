@@ -323,6 +323,7 @@ margin: 3px;
   width: 95%;
   margin: auto;
   height: auto;
+  align-self: center;
   overflow-y: hidden !important;
   padding-bottom: 4rem;
   padding-left: 5px;
@@ -332,6 +333,7 @@ margin: 3px;
 .emp-profile {
   display: flex;
   flex-wrap: wrap;
+  justify-content: space-around;
 }
 
 .left-emp-profile {
@@ -347,7 +349,7 @@ margin: 3px;
   justify-content: center;
   align-items: center;
   gap: 20px;
-  height: 20vh;
+  height: 18vh;
   /* border: 1px solid rgb(240, 231, 231); */
   box-shadow: 0 0 5px rgb(179, 170, 170);
 }
@@ -391,13 +393,22 @@ margin: 3px;
 }
 
 .right-emp-calender {
-  height: 30vh;
+  height: 36vh;
+  width: 330px;
   /* border: 2px solid red; */
   padding: 1rem;
   background-image: url("./assets/Rectangle60.png");
   box-shadow: 0 0 5px rgb(179, 170, 170);
 }
-
+.concernGrid{
+  /* width: 90%; */
+ 
+  /* border: 2px solid red; */
+  padding: 1rem;
+  box-shadow: 0 0 5px rgb(179, 170, 170);
+  height: 40vh;
+  overflow: auto;
+}
 .calender-title {
   display: flex;
   justify-content: space-between;
@@ -449,11 +460,11 @@ margin: 3px;
 
 .emp-cards {
   display: flex;
-  gap: 10px;
-  /* align-items: center; */
+  /* gap:1.3rem; */
+  justify-content: space-around;
+  align-items: center;
   flex-wrap: wrap;
   /* height: 60vh; */
-  /* border: 2px solid red; */
 }
 
 .emp-card {
@@ -1646,7 +1657,7 @@ width: 90%;
 .right-emp-calender{
 zoom: 0.8;
 margin: auto;
-width: 90%;
+/* width: 90%; */
 justify-content: center;
 }
 .emp-card{

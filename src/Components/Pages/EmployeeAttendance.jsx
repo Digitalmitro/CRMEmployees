@@ -31,7 +31,7 @@ const EmployeeAttendance = () => {
   const email = NewProfile?.email;
   const user_id = NewProfile?._id;
 
-  console.log("NewProfile", NewProfile);
+  console.log("userToken", userToken);
   const [hidden, setHidden] = useState(false);
   const [data, setData] = useState([]);
   const navigate = useNavigate();
@@ -39,7 +39,8 @@ const EmployeeAttendance = () => {
   const [isAttendanceOpen, setIsAttendance] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState("");
   const [date, setDate] = useState("");
-  const [concernData, setConcernData] = useState("");
+  const [Punchmessage, setPunchMessage] = useState("");
+  const [concernData, setConcernData] = useState([]);
 
   const [punchStatus, setPunchStatus] = useState("");
 
@@ -76,7 +77,9 @@ const EmployeeAttendance = () => {
       };
       console.log("leave payload", payload)
       // Send POST request to the server
-      await axios.post(`${import.meta.env.VITE_BACKEND_API}/concern`, payload);
+      await axios.post(`${import.meta.env.VITE_BACKEND_API}/concern`, payload,{
+        headers:userToken
+      });
 
       message.success("Concern Created and associated with Admin");
       form.resetFields();
@@ -229,14 +232,23 @@ const EmployeeAttendance = () => {
       const res = await axios.get(
       `${import.meta.env.VITE_BACKEND_API}/attendance/${user_id}`
     );
-    const ConcernRes = await axios.get(`${import.meta.env.VITE_BACKEND_API}/concern`);
-setConcernData(ConcernRes.data)
+    
     setData(res.data.attendance);
     }catch(err){
       console.log(err)
     }
   };
-
+  const getConcernData = async() => {
+    try{
+      const ConcernRes = await axios.get(`${import.meta.env.VITE_BACKEND_API}/concern/${user_id}`, {
+        headers:userToken
+      });
+  setConcernData(ConcernRes.data.reverse())
+    }catch(err){
+      console.log(err)
+    }
+  }
+console.log("concernData", concernData)
   const handleChange = (date, dateString) => {
     console.log(date, dateString);
   };
@@ -256,7 +268,7 @@ setConcernData(ConcernRes.data)
     const payload = {
       name,
       email,
-      message,
+      message:Punchmessage,
       date: moment().format("MMMM Do YYYY, h:mm:ss a"),
       punchType: punchStatus,
       status: "Pending",
@@ -265,29 +277,16 @@ setConcernData(ConcernRes.data)
     try {
       const res = await axios.post(
         `${import.meta.env.VITE_BACKEND_API}/concern`,
-        payload
+        payload, {
+          headers:userToken
+        }
       );
       toast.info(res.data, {});
     } catch (error) {}
   };
   const handledOk = async () => {
     setIsAttendance(false);
-    const payload = {
-      name,
-      email,
-      message,
-      date: msgDate,
-
-      status: "Pending",
-      user_id,
-    };
-    try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_BACKEND_API}/concern`,
-        payload
-      );
-      toast.info(res.data, {});
-    } catch (error) {}
+   
   };
 
   const handleCancel = () => {
@@ -654,17 +653,10 @@ setConcernData(ConcernRes.data)
       "Cannot calculate time difference: Missing login or logout data"
     );
   }
-
-  const bookLeave = async () => {
-    try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_BACKEND_API}/concern`,
-        payload
-      );
-    } catch (err) {
-      console.log(err);
-    }
-  };
+useEffect(()=>{
+  getConcernData()
+},[])
+  
   return (
     <>
       {/* modal */}
@@ -693,7 +685,7 @@ setConcernData(ConcernRes.data)
             <div className="col">
               <h6>write concern</h6>
 
-              <textarea onChange={(e) => setMessage(e.target.value)} />
+              <textarea onChange={(e) => setPunchMessage(e.target.value)} />
             </div>
           </div>
         </div>
@@ -711,11 +703,7 @@ setConcernData(ConcernRes.data)
               className="col-md-3"
               style={{ display: "flex", justifyContent: "center" }}
             >
-              {/* <h6>Select Date</h6> */}
-              {/* <Space direction="vertical" style={{  outline: "none", border: "1px solid #f24e1e" }}>
-              <DatePicker onChange={(e) => setMessage(e.target.value)} />
-
-            </Space> */}
+           
               <div className="emp-select-months-year">
                 <div className="emp-select-month dflex">
                   <select
@@ -795,11 +783,7 @@ setConcernData(ConcernRes.data)
             </div>
           </div>
         </div>
-        {/* <div className="col">
-            <h6>write concern</h6>
-
-            <textarea onChange={(e) => setMessage(e.target.value)} />
-          </div> */}
+      
       </Modal>
 
       {/* bOOK lEAVE  */}
@@ -836,8 +820,8 @@ setConcernData(ConcernRes.data)
           </Form.Item>
         </Form>
       </Modal>
-      <div className="attendance-container">
-        <div className="emp-profile">
+      <div className="attendance-container  my-4">
+        <div className="emp-profile gap-4">
           <div className="left-emp-profile">
             <div className="profileImg">
               <img src={userIcon} alt="" />
@@ -852,53 +836,12 @@ setConcernData(ConcernRes.data)
             <div className="empBtn" onClick={showLeaveModal}>
               <button>+ BOOK LEAVE</button>
             </div>
-          </div>
-          <div
-            className="right-emp-calender mb-4"
-            style={{ marginTop: "10px" }}
-          >
-            <div className="calender-title">
-              <h5 style={{ fontSize: "18px", fontWeight: "400" }}>Calender</h5>
-              <div className="right-calender-title">
-                <h6
-                  style={{
-                    color: "#FF560E",
-                    cursor: "pointer",
-                    padding: "0px 2rem",
-                  }}
-                  onClick={showAttendance}
-                >
-                  MONTHLY VIEW
-                </h6>
-                <a
-                  href="/attendance-list"
-                  style={{
-                    color: "#222",
-                  }}
-                >
-                  <h6>FULL CALENDER</h6>
-                </a>
-              </div>
-            </div>
-            <div className="emp-dates">
-              <div>
-                <p>Today</p>
-                <small>{moment().format("dddd, DD MMMM")}</small>
-              </div>
-              <div>
-                <hr style={{ border: "1px solid #D9D9D9", width: "24vw" }} />
-              </div>
-              <div>
-                <p>Tommorow</p>
-                <small>{moment().add(1, "day").format("dddd, DD MMMM")}</small>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* -------emp--punch--cards----- */}
 
-        <div className="emp-cards">
-          <div className="emp-card">
+            <div className="empBtn my-4" style={{background:"green !important"}}>
+            <button  onClick={showModal}>Forget to Punch</button>
+          </div>
+          </div>
+          <div className="emp-card mt-2">
             <div className="emp-punch-clock my-2 ">
               <h4>Punch Clock</h4>
               <img src={im3} alt="" />
@@ -928,12 +871,11 @@ setConcernData(ConcernRes.data)
                 Check my current location
               </div>
             </div>
-            {/* <div className="empBtn my-2">
-            <button>Forget to Punch</button>
-          </div> */}
+          
+        
           </div>
 
-          <div className="emp-card ">
+          <div className="emp-card mt-2 ">
             <div className="emp-punch-in-out-details">
               <h6 className="my-2">
                 <span style={{ color: "#0BC81E" }}>Punch in :</span>{" "}
@@ -973,9 +915,55 @@ setConcernData(ConcernRes.data)
               </h6>
             </div>
           </div>
-          <div className="emp-card">
+        {/* </div> */}b
+        {/* -------emp--punch--cards----- */}
+    
+        {/* <div className="emp-cards mb-5"  style={{ marginTop: "10px" }}> */}
+        <div
+            className="right-emp-calender mb-4 my-2"
+          
+          >
+          <h6 className="my-3">Calender</h6>
+            <div className="emp-dates">
+              <div>
+                <p>Today</p>
+                <small>{moment().format("dddd, DD MMMM")}</small>
+              </div>
+              <div>
+                <hr style={{ border: "1px solid #D9D9D9",  }} />
+              </div>
+              <div>
+                <p>Tommorow</p>
+                <small>{moment().add(1, "day").format("dddd, DD MMMM")}</small>
+              </div>
+            </div>
+            <div className="calender-title">
+           
+           <div className="right-calender-title">
+             <h6
+               style={{
+                 color: "#FF560E",
+                 cursor: "pointer",
+                 padding: "0px 2rem",
+               }}
+               onClick={showAttendance}
+             >
+               MONTHLY VIEW
+             </h6>
+             <a
+               href="/attendance-list"
+               style={{
+                 color: "#222",
+               }}
+             >
+               <h6>FULL CALENDER</h6>
+             </a>
+           </div>
+         </div>
+          </div>
+          <div className=" concernGrid mb-4 mt-3">
             <div className="emp-leave-balance p-2">
-              <p>Leave Balances</p>
+              <h6 style={{color:"coral"}}>Raised Concern</h6>
               <a href="">
                 <img src={img7} alt="" />
               </a>
@@ -983,36 +971,28 @@ setConcernData(ConcernRes.data)
             <table class="table">
               <thead>
                 <tr>
-                  <th scope="col">Type</th>
-                  <th scope="col">Entitlement</th>
-                  <th scope="col">Used</th>
-                  <th scope="col">Balance</th>
+                  <th scope="col" style={{color:"blue"}}>Concern Type</th>
+                  <th scope="col">Date</th>
+                  <th scope="col">Approval</th>
+                  <th scope="col">Concern details</th>
+                  {/* <th scope="col">Balance</th> */}
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>Casual</td>
-                  <td>20h</td>
-                  <td>40h</td>
-                  <td>168h</td>
+               {concernData?.map((concern) => {
+                return(
+                  <tr>
+                  <td  style={{color: concern.punchType === "Punch Out" ? "blue": (concern.punchType === ("Leave Application" || "Leave") ? "red" : "green") }}>{concern.punchType}</td>
+                  <td>{concern.date}</td>
+                  <td style={{color: concern.status === "Approved" ? "green": (concern.status === "Denied" &&"red")}} >{concern.status}</td>
+                  <td>{concern.message}</td>
                 </tr>
-                <tr>
-                  <td>Casual</td>
-                  <td>20h</td>
-                  <td>40h</td>
-                  <td>168h</td>
-                </tr>
-                <tr>
-                  <td>Casual</td>
-                  <td>20h</td>
-                  <td>40h</td>
-                  <td>168h</td>
-                </tr>
+                )
+               })}
+               
               </tbody>
             </table>
-            <div className="show-other-balances">
-              <h6>Show Other Balances</h6>
-            </div>
+          
           </div>
         </div>
         <div
@@ -1023,9 +1003,7 @@ setConcernData(ConcernRes.data)
             marginLeft: "10px",
           }}
         >
-          <button style={{ width: "330px" }} onClick={showModal}>
-            FORGET TO PUNCH?
-          </button>
+        
         </div>
       </div>
     </>
