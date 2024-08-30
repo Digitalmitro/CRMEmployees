@@ -90,7 +90,9 @@ const Transfers = () => {
 
     const noti = {
       message: `${NewProfile?.name} created a callback: ${userData.name}`,
-      currentDate:moment().format('MMMM Do YYYY, h:mm:ss a')
+      Status:false,
+      currentDate: moment().format("MMMM Do YYYY, h:mm:ss a"),
+      Date: moment().format("MMMM Do YYYY, h:mm:ss a"),
     }
     await axios.post(`${import.meta.env.VITE_BACKEND_API}/notification`, noti)
   }
@@ -120,7 +122,9 @@ const Transfers = () => {
 
     const noti = {
       message: `${NewProfile?.name} created a sale: ${userData.name}`,
-      currentDate:moment().format('MMMM Do YYYY, h:mm:ss a')
+      Status:false,
+      currentDate: moment().format("MMMM Do YYYY, h:mm:ss a"),
+      Date: moment().format("MMMM Do YYYY, h:mm:ss a"),
     }
     await axios.post(`${import.meta.env.VITE_BACKEND_API}/notification`, noti)
   }

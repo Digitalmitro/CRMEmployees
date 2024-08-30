@@ -1,6 +1,8 @@
 // src/components/CustomDrawer.js
 
 import React from "react";
+import DM from '../../assets/logo.png'
+import Push from 'push.js'
 import { useState, useEffect } from "react";
 import {
   Drawer,
@@ -117,7 +119,10 @@ const TransferDrawer = ({ open, onClose, refreshData }) => {
         `${import.meta.env.VITE_BACKEND_API}/transfer`,
         payload
       );
-
+      Push.create(`Hey ${useName}`, {
+        body: `You have successfully ceated a Lead ${name}'?`,
+        icon: `${DM}`,
+    })
       toast.success(res.data, {});
       setName("");
       setEmail("");
@@ -135,13 +140,16 @@ const TransferDrawer = ({ open, onClose, refreshData }) => {
 
       const noti = {
         message: `${NewProfile?.name} created a transfer: ${name}`,
-        currentDate: moment().format("MMMM Do YYYY, h:mm:ss a"),
+        Status:false,
+      currentDate: moment().format("MMMM Do YYYY, h:mm:ss a"),
+      Date: moment().format("MMMM Do YYYY, h:mm:ss a"),
       };
       await axios.post(
         `${import.meta.env.VITE_BACKEND_API}/notification`,
         noti
       );
-      triggerNotification(noti);
+      // triggerNotification(noti);
+     
 
     } catch (error) {
       toast.warning(error.response.data, {});
