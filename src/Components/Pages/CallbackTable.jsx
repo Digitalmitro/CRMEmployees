@@ -45,8 +45,7 @@ const CallbackTable = () => {
         onClose();
     };
 
-
-    const userToken = Cookies.get('userToken')
+    const userToken = localStorage.getItem('userToken')
     const Profile = localStorage.getItem('user')
     const NewProfile = JSON.parse(Profile)
     const user_id = NewProfile?._id
@@ -58,11 +57,21 @@ const CallbackTable = () => {
     const [searchResults, setSearchResults] = useState([])
     const [selectedMonth, setSelectedMonth] = useState('')
     const [date, setDate] = useState('')
-
+console.log("userToken", userToken)
+console.log("NewProfile", NewProfile)
     // Function to handle the change in the select input
     const handleMonthChange = (event) => {
         setSelectedMonth(event.target.value)
     }
+
+    useEffect(() => {
+        // Request permission to display notifications
+        if (Notification.permission === "default") {
+            Notification.requestPermission();
+        }
+    }, []);
+
+
     console.log('USER_ID', user_id)
     const Getdata = async () => {
         const res = await axios.get(`${import.meta.env.VITE_BACKEND_API}/callback-user/${user_id}`)

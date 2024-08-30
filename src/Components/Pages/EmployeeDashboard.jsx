@@ -6,7 +6,37 @@ import callbackImg from '../../assets/callback-12.png'
 import transferImg from '../../assets/transfer-img.png'
 import salesImg from '../../assets/sales-img.png'
 import projectImg from '../../assets/project-12.png'
+import { useEffect } from "react";
+import axios from 'axios'
 const Dashboard = () => {
+
+
+  const userToken = localStorage.getItem('userToken')
+console.log("userToken", userToken)
+  const checkToken = async () => {
+    if(userToken){
+   const res = await axios
+      .get(`${import.meta.env.VITE_BACKEND_API}/check-user-token`, {
+        headers: { token: userToken },
+      })
+      .then((res) => {
+        console.log(`user Response --> ${res}`);
+      })
+      .catch((e) => {
+        alert("User not valid, logging out...");
+        localStorage.clear();
+        navigate("/login");
+      });
+    }else{
+      console.log("NO USER TOKEN")
+    }
+  };
+
+  useEffect(() => {
+    checkToken();
+  }, [userToken]);
+
+
   return (
     <>
       <div className=" dashboard container d-flex flex-wrap  align-items-center justify-content-start my-3 gap-3" >

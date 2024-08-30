@@ -39,9 +39,8 @@ function App() {
   const [toggleSidebar, setToggleSidebar] = useState(false);
   const [activeButton,setActiveButton]=useState(0)
 
-  const userToken = Cookies.get("userToken");
-  // const token="ddsddefefefefe"
-
+  const userToken = localStorage.getItem('userToken');
+console.log("userToken", userToken )
   const value = {
     
     activeButton,
@@ -99,15 +98,15 @@ function App() {
               <Route path="/employee-msg" element={<EmpMsg />} />
 
               <Route path="/doccuments/:id" element={<Doccs />} />
-              <Route path="*" element={<Navigate to="/Login" replace />} />
+              <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
           </div>
         </div> 
        </>
     ):(
       <Routes>
-      <Route path="*" element={<Navigate to="/Login" replace />} />
-     <Route path="/Login" element={<Login />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
+     <Route path="/login" element={<Login />} />
    </Routes>
   )}
 

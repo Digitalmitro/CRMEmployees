@@ -12,7 +12,7 @@ import { Stepper, Step, StepLabel, StepContent, TextField, Button } from "@mui/m
 
 const CallbackView = () => {
     const navigate = useNavigate();
-    const userToken = Cookies.get('userToken');
+    const userToken = localStorage.getItem('userToken');
     const { id } = useParams();
     const Profile = localStorage.getItem("user");
     const NewProfile = JSON.parse(Profile);
@@ -20,7 +20,7 @@ const CallbackView = () => {
     const [isOpen, setIsOpen] = useState(true);
     const toggle = () => setIsOpen(!isOpen);
     const [data, setData] = useState({});
-    const [name, setName] = useState(data.name);
+    const [name, setName] = useState(data?.name);
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
     const [domainName, setDomain] = useState("");
@@ -72,6 +72,7 @@ const CallbackView = () => {
 
     useEffect(() => {
         getData();
+        console.log("calbacke",data)
         if (userToken) {
             // Use the <Navigate /> component to redirect
         } else {
@@ -158,14 +159,14 @@ const CallbackView = () => {
                         <p className="row">
                             <span className="col-4">Name</span>
                             <span className="col-6">
-                                <input type="text" readOnly={true} placeholder={data.name} value={name} onChange={(e) => setName(e.target.value)} />
+                                <input type="text" readOnly={true} placeholder={data?.name} value={name} onChange={(e) => setName(e.target.value)} />
                             </span>
                         </p>
                         <div className="row">
                             <p className="col-md-4">Email</p>
                             <div className="col-md-8 d-flex gap-3 justify-content-start align-items-start">
                                 <span>
-                                    <input readOnly={true} type="email" placeholder={data.email} value={email} onChange={(e) => setEmail(e.target.value)} />
+                                    <input readOnly={true} type="email" placeholder={data?.email} value={email} onChange={(e) => setEmail(e.target.value)} />
                                 </span>
                             </div>
                         </div>
@@ -173,14 +174,14 @@ const CallbackView = () => {
                             <p className="col-4 my-3">Mobile</p>
                             <div className="col-6 d-flex gap-3 justify-content-start align-items-start">
                                 <span>
-                                    <input readOnly={true} className="my-2" type="number" placeholder={`+1 ${data.phone}`} value={phone} onChange={(e) => setPhone(e.target.value)} />
+                                    <input readOnly={true} className="my-2" type="number" placeholder={`+1 ${data?.phone}`} value={phone} onChange={(e) => setPhone(e.target.value)} />
                                 </span>
                             </div>
                         </div>
                         <p className="row">
                             <span className="col-4 my-2">Domain Name</span>
                             <span className="col-6">
-                                <input readOnly={true} type="text" placeholder={data.domainName} value={domainName} onChange={(e) => setDomain(e.target.value)} />
+                                <input readOnly={true} type="text" placeholder={data?.domainName} value={domainName} onChange={(e) => setDomain(e.target.value)} />
                             </span>
                         </p>
                         <p className="row">
@@ -191,7 +192,7 @@ const CallbackView = () => {
                                     resize="none"
                                     columns={40}
                                     type="text"
-                                    placeholder={data.address}
+                                    placeholder={data?.address}
                                     value={address}
                                     onChange={(e) => setAddress(e.target.value)}
                                 />
@@ -200,7 +201,7 @@ const CallbackView = () => {
                         <p className="row">
                             <span className="col-4">Country</span>
                             <span className="col-6">
-                                <input readOnly={true} type="text" placeholder={data.country} value={country} onChange={(e) => setCountry(e.target.value)} />
+                                <input readOnly={true} type="text" placeholder={data?.country} value={country} onChange={(e) => setCountry(e.target.value)} />
                             </span>
                         </p>
                     </div>
@@ -211,7 +212,7 @@ const CallbackView = () => {
                                 className="col-7"
                                 type="email"
                                 id="email"
-                                placeholder={data.calldate}
+                                placeholder={data?.calldate}
                                 value={calldate}
                                 onChange={(e) => setCalldate(e.target.value)}
                             />
@@ -220,7 +221,7 @@ const CallbackView = () => {
                             <label htmlFor="website" className="col-4 my-3">Budget</label>
                             <input readOnly={true}
                                 className="col-7 my-2"
-                                placeholder={`$ ${data.buget}`}
+                                placeholder={`$ ${data?.buget}`}
                                 value={budget}
                                 onChange={(e) => setBudget(e.target.value)}
                             />
@@ -231,7 +232,7 @@ const CallbackView = () => {
                                 className="col-7 my-2"
                                 type="text"
                                 id="createdBy"
-                                placeholder={data.employeeName}
+                                placeholder={data?.employeeName}
                             />
                         </div>
                         <div className="row">
@@ -240,7 +241,7 @@ const CallbackView = () => {
                                 className="col-7 my-2"
                                 type="text"
                                 id="createdDate"
-                                placeholder={data.createdDate}
+                                placeholder={data?.createdDate}
                             />
                         </div>
                         <div className="comment-progress" style={{ height: "auto",marginRight:"22px",marginTop:"10px" }}>
@@ -248,7 +249,7 @@ const CallbackView = () => {
                             Add Comment</Button></div>
                             <Stepper activeStep={activeStep} orientation="vertical">
                                 <Step key="Step1">
-                                    <StepLabel >Carl Morena</StepLabel>
+                                    <StepLabel >{data?.employeeName}</StepLabel>
                                     <StepContent>
                                         <TextField
                                             label="Comments"
@@ -256,7 +257,7 @@ const CallbackView = () => {
                                             rows={4}
                                           
                                             fullWidth
-                                            value="Comment Added by user"
+                                            value={data?.comments}
                                             inputProps={{ readOnly: true }}
                                             sx={{borderRadius:"10px !important"}}
                                         />

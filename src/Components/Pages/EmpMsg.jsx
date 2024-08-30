@@ -13,7 +13,8 @@ const EmpMsg = () => {
 
   const messagesEndRef = useRef(null); 
 
-  const userToken = Cookies.get("userToken");
+  const userToken = localStorage.getItem("userToken");
+  const user = localStorage.getItem("user");
   const decodeToken = userToken && jwtDecode(userToken);
   const userId = decodeToken._id;
   const [messages, setMessages] = useState([]);
@@ -26,8 +27,8 @@ const EmpMsg = () => {
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    name: decodeToken.name,
-    email: decodeToken.email,
+    name: user.name,
+    email: user.email,
     message: "",
     senderId: userId,
     date: moment().format("h:mm:ss a"),

@@ -33,7 +33,7 @@ const Transfers = () => {
 
   const navigate = useNavigate()
 
-  const userToken = Cookies.get('userToken')
+  const userToken = localStorage.getItem('userToken')
   const Profile = localStorage.getItem('user')
   const NewProfile = JSON.parse(Profile)
   const user_id = NewProfile?._id
@@ -129,7 +129,7 @@ const Transfers = () => {
     if (userToken) {
       // Use the <Navigate /> component to redirect
     } else {
-      return navigate('/Login')
+      return navigate('/login')
     }
   }, [searchTerm, sortBy, userToken])
   // Function to handle search term change

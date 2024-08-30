@@ -17,17 +17,15 @@ import { DatePicker, Space } from 'antd';
 import axios from "axios"
 
 
-
-
 const EmployeeAttendance = () => {
-  const userToken = Cookies.get('userToken')
+  const userToken =localStorage.getItem('userToken')
   const Profile = localStorage.getItem('user')
   const NewProfile = JSON.parse(Profile)
   const name = NewProfile?.name
   const email = NewProfile?.email
   const user_id = NewProfile?._id
 
-  // console.log("NewProfile", NewProfile);
+  console.log("NewProfile", NewProfile);
   const [hidden, setHidden] = useState(false)
   const [data, setData] = useState([])
   const navigate = useNavigate()
@@ -178,21 +176,14 @@ const EmployeeAttendance = () => {
   }).length;
 
 
-
-
-
-
   const getAttData = async () => {
     const res = await axios.get(`${import.meta.env.VITE_BACKEND_API}/attendance/${user_id}`)
     setData(res.data.attendance)
   }
 
-
   const handleChange = (date, dateString) => {
     console.log(date, dateString);
   };
-
-
 
   const handleMonthChange = (event) => {
     setSelectedMonth(event.target.value)
@@ -586,7 +577,15 @@ const EmployeeAttendance = () => {
     console.log('Cannot calculate time difference: Missing login or logout data')
   }
 
+const bookLeave = async() => {
+  try{
+    const res = await axios.post(`${import.meta.env.VITE_BACKEND_API}/concern`, payload)
 
+
+  }catch(err){
+    console.log(err)
+  }
+}
   return <>
     {/* modal */}
     <Modal
@@ -687,7 +686,7 @@ const EmployeeAttendance = () => {
             </h4>
           </div>
           <div className="empBtn">
-            <button>+ BOOK LEAVE</button>
+            <button onClick={() => bookLeave()}>+ BOOK LEAVE</button>
           </div>
         </div>
         <div className="right-emp-calender mb-4" style={{ marginTop: "10px" }}>
@@ -827,6 +826,8 @@ const EmployeeAttendance = () => {
     </div>
   </>;
 };
+
+
 
 export default EmployeeAttendance;
 

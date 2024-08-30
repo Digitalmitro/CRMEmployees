@@ -16,6 +16,7 @@ const ProjectList = () => {
   const { id } = useParams();
   const [data, setData] = useState(initialData);
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const adminToken = localStorage.getItem('token')
 
   const [modalOpened, setModalOpened] = useState(false);
 
@@ -128,88 +129,6 @@ const [uploadedDocs, setUploadedDocs] = useState();
   const handleCancel = () => {
     setModalOpened(false);
   };
-
-
-
-  // const handleSearchChange = (e) => {
-  //   const searchTerm = e.target.value.toLowerCase();
-  
-  //   // Filter tasks based on the search term
-  //   const filtered = project.tasks.filter((task) =>
-  //     task.taskname.toLowerCase().includes(searchTerm)
-  //   );
-  
-  //   // Function to categorize tasks by their status
-  //   const categorizeTask = (task) => {
-  //     if (task.status === "Completed") return "list3";
-  //     if (task.status === "In Progress") return "list2";
-  //     return "list1";
-  //   };
-  
-  //   // Initialize new data structure for DragDropContext
-  //   const newData = { ...initialData };
-  
-  //   filtered.forEach((task) => {
-  //     const listId = categorizeTask(task);
-  
-  //     const subList = {
-  //       id: task._id,
-  //       content: (
-  //         <div
-  //           key={task._id}
-  //           style={{
-  //             fontSize: "0.8rem",
-  //             fontWeight: "300",
-  //             lineHeight: "10px",
-  //             letterSpacing: "0.7px",
-  //           }}
-  //         >
-  //           <h6 style={{ fontWeight: "300", fontSize: "0.9rem" }}>
-  //             {task.taskname || "Task"}
-  //           </h6>
-  //           <p style={{ paddingTop: "10px" }}>
-  //             {task.assigneeName || "Assignee"}
-  //           </p>
-  //           <p>
-  //             {task.deadline ? new Date(task.deadline).toLocaleDateString() : "No Deadline"}
-  //           </p>
-  //           <p style={{ color: task.status === "Pending" ? "red" : "green" }}>
-  //             {task.priority || "Priority"}
-  //           </p>
-  //           <textarea
-  //             rows="4"
-  //             readOnly={true}
-  //             cols="25"
-  //             placeholder={task.comments || "Comments"}
-  //             style={{ border: "none" }}
-  //           ></textarea>
-  //         </div>
-  //       ),
-  //     };
-  
-  //     // Add the task to the appropriate list
-  //     newData.lists = newData.lists.map((list) =>
-  //       list.id === listId
-  //         ? { ...list, items: [...list.items, subList] }
-  //         : list
-  //     );
-  //   });
-  
-  //   // Update the state with the filtered and categorized tasks
-  //   setData(newData);
-  //   setFilteredTasks(filtered); // Keep this if you need to track filtered tasks separately
-  // };
-  
-  // const toggleSearchVisibility = () => {
-  //   setIsSearchVisible((prevVisible) => !prevVisible);
-  // };
-
-  
-
-
-
-
-
 
   const resetFilter=()=>{
     window.location.reload()
@@ -746,7 +665,9 @@ const handleMeModeToggle = async () => {
       // Post the new task data to the backend
       const response=await axios.post(
         `${import.meta.env.VITE_BACKEND_API}/projects/${id}`,
-        newTaskData
+        newTaskData, {
+          headers: { token: adminToken },
+        }
       );
      
 
@@ -790,7 +711,9 @@ const handleMeModeToggle = async () => {
   // set data for project
   const [userdata, setUserData] = useState([]);
   const getUsersData = async () => {
-    const res = await axios.get(`${import.meta.env.VITE_BACKEND_API}/alluser`);
+    const res = await axios.get(`${import.meta.env.VITE_BACKEND_API}/alluser`, {
+      headers: { token: adminToken },
+    });
 
     setUserData(res.data);
   };

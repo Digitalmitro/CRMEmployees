@@ -80,10 +80,10 @@ const UserProfileDrawer = ({ open, onClose }) => {
 
   const handleLogout = async() => {
     localStorage.removeItem("user");
-    Cookies.remove("userToken");
+    localStorage.removeItem("userToken");
     onClose()
     // await new Promise((resolve) => setTimeout(resolve, 100));
-    navigate("/Login");
+    navigate("/login");
     window.location.reload()
   };
 

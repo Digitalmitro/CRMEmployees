@@ -34,7 +34,7 @@ const useStyle = createStyles(() => ({
 const SalesDrawer = ({ open, onClose, refreshData }) => {
     const { styles } = useStyle();
     const navigate = useNavigate()
-  const userToken = Cookies.get('userToken')
+  const userToken = localStorage.getItem('userToken')
   const Profile = localStorage.getItem('user')
   const NewProfile = JSON.parse(Profile)
   const useName = NewProfile?.name
@@ -103,7 +103,7 @@ const SalesDrawer = ({ open, onClose, refreshData }) => {
     if (userToken) {
       // Use the <Navigate /> component to redirect
     } else {
-      return navigate('/Login')
+      return navigate('/login')
     }
   }, [userToken])
   const classNames = {

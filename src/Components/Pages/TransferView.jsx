@@ -12,7 +12,7 @@ import { Stepper, Step, StepLabel, StepContent, TextField, Button } from "@mui/m
 
 const TransferView = () => {
     const navigate = useNavigate()
-  const userToken = Cookies.get('userToken')
+  const userToken = localStorage.getItem('userToken')
   const { id } = useParams()
   const Profile = localStorage.getItem('user')
   const NewProfile = JSON.parse(Profile)
@@ -78,7 +78,7 @@ const handleCancel = () => {
     if (userToken) {
       // Use the <Navigate /> component to redirect
     } else {
-      return navigate('/Login')
+      return navigate('/login')
     }
   }, [userToken])
 

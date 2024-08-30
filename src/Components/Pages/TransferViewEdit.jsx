@@ -37,7 +37,7 @@ const useStyle = createStyles(() => ({
 const TransferViewEdit = () => {
     const { styles } = useStyle();
     const navigate = useNavigate()
-    const userToken = Cookies.get('userToken')
+    const userToken = localStorage.getItem('userToken')
     const { id } = useParams()
     const Profile = localStorage.getItem('user')
     const NewProfile = JSON.parse(Profile)
@@ -64,9 +64,8 @@ const TransferViewEdit = () => {
     useEffect(() => {
       getData()
       if (userToken) {
-        // Use the <Navigate /> component to redirect
       } else {
-        return navigate('/Login')
+        return navigate('/login')
       }
     }, [userToken])
   
@@ -75,7 +74,6 @@ const TransferViewEdit = () => {
       try {
         const payload = {}
   
-        // Check if each field has been changed and update the payload accordingly
         if (name !== '') payload.name = name
         if (email !== '') payload.email = email
         if (phone !== '') payload.phone = phone

@@ -37,7 +37,7 @@ const useStyle = createStyles(() => ({
 const CallbackDrawer = ({open,onClose,refreshData}) => {
     const { styles } = useStyle();
     const navigate = useNavigate()
-const userToken = Cookies.get('userToken')
+const userToken = localStorage.getItem('userToken')
 const [isOpen, setIsOpen] = useState(true)
 const [name, setName] = useState('')
 const [email, setEmail] = useState('')

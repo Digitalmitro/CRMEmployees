@@ -10,11 +10,12 @@ import axios from "axios";
 import logo from "../../assets/logo.png";
 const Login = () => {
   const navigate = useNavigate();
-
-  const userToken = Cookies.get("userToken");
+  // const userToken = localStorage.getItem("userToken");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  let userToken;
 
   const handleSubmmit = async (e) => {
     e.preventDefault();
@@ -28,8 +29,12 @@ const Login = () => {
         payload,  { withCredentials: true } 
       );
       console.log(response.data);
-      Cookies.set("userToken", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      userToken = response?.data.token
+      // localStorage.setItem("user", response?.data);
+      localStorage.setItem("user", JSON.stringify(response?.data.user));
+
+      localStorage.setItem("userToken", response?.data.token);
+      // Cookies.set("userToken", response.data.token);
       toast.success(response.data.status, {});
       setTimeout(() => {
         window.location.href = "/";
@@ -46,7 +51,7 @@ const Login = () => {
       // Use the <Navigate /> component to redirect
       return navigate("/");
     } else {
-      return navigate("/Login");
+      return navigate("/login");
     }
   }, [userToken]);
 
