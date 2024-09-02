@@ -14,7 +14,7 @@ const EmpMsg = () => {
   const messagesEndRef = useRef(null); 
 
   const userToken = localStorage.getItem("userToken");
-  const user = localStorage.getItem("user");
+  const user = JSON.parse(localStorage.getItem("user"));
   const decodeToken = userToken && jwtDecode(userToken);
   const userId = decodeToken._id;
   const [messages, setMessages] = useState([]);
@@ -25,18 +25,15 @@ const EmpMsg = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
-
   const [formData, setFormData] = useState({
-    name: user.name,
-    email: user.email,
+    name: user?.name,
+    email: user?.email,
     message: "",
     senderId: userId,
     date: moment().format("h:mm:ss a"),
     status: "",
     user_id: userId,
   });
-
-
 
   
   // Scroll to the bottom function
@@ -48,7 +45,6 @@ const EmpMsg = () => {
   useEffect(() => {
     scrollToBottom(); // Scroll to bottom on page load or when messages change
   }, [messages]);
-
 
 
   // Establish socket connection only when an employee is selected
@@ -79,15 +75,36 @@ const EmpMsg = () => {
         name: formData.name,
         email: formData.email,
         senderId: userId,
-        receiverId: "66c2e95d90490ca5dfc00764", // Make this dynamic if needed.
+        receiverId: "66c2e95d90490ca5dfc00764", 
         message: input,
+        status:'false',
         role: "user",
         time: moment().format("h:mm:ss a"),
         userId: formData.user_id,
       };
 
+      try{
+        console.log("hereeeee",newMessage)
+       const res =  axios
+        .post(
+          `${import.meta.env.VITE_BACKEND_API}/notifymessage`, {
+            senderName:formData.name,
+            Date: moment().format("MMMM Do YYYY, h:mm:ss a"),
+            status:false,
+            message: input,
+            senderId: userId,
+            receiverId: "66c2e95d90490ca5dfc00764"
+          }
+          )
+          console.log("res", res)
+    
+       }catch(err){
+        console.log(err)
+       }
+
       setMessages([...messages, newMessage]);
-      socket.emit("sendMsg", newMessage);
+   socket.emit("sendMsg", newMessage)
+  
       setInput("");
     }
   };
@@ -102,8 +119,10 @@ const EmpMsg = () => {
       )
       .then((res) => {
         const chatData = res.data.chatData;
-              console.log(chatData, "chatData")
+
         if (chatData.length > 0) {
+        
+          const filterStatus = res.data.chatData[0].messages.filter((msg)=> msg.status  &&  msg.status === 'false')
           setMessages(res.data.chatData[0].messages);
         } else {
           setMessages([]);
@@ -117,7 +136,6 @@ const EmpMsg = () => {
         console.log(err);
       });
   };
-  console.log("messages", messages)
 
   useEffect(() => {
       getChatData(formData.user_id);
@@ -196,7 +214,7 @@ const EmpMsg = () => {
                 <Spin tip="Loading..." style={styles.spinner} />
               ) : (
                 messages?.map((item, index) => {
-                  console.log(item);
+                  // console.log(item);
                   return (
                     <>
                     <div

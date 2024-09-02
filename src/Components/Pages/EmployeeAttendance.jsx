@@ -31,7 +31,6 @@ const EmployeeAttendance = () => {
   const email = NewProfile?.email;
   const user_id = NewProfile?._id;
 
-  console.log("userToken", userToken);
   const [hidden, setHidden] = useState(false);
   const [data, setData] = useState([]);
   const navigate = useNavigate();
@@ -43,7 +42,8 @@ const EmployeeAttendance = () => {
   const [concernData, setConcernData] = useState([]);
 
   const [punchStatus, setPunchStatus] = useState("");
-
+  const [punchDate, setPunchDate] = useState("");
+console.log("punchDate", punchDate)
   //model
   const [msgDate, setMsgDate] = useState("");
   const [leaveConcern, setleaveConcern] = useState("");
@@ -75,7 +75,6 @@ const EmployeeAttendance = () => {
         punchType:"Leave Application",
         user_id,
       };
-      console.log("leave payload", payload)
       // Send POST request to the server
       await axios.post(`${import.meta.env.VITE_BACKEND_API}/concern`, payload,{
         headers:userToken
@@ -134,7 +133,6 @@ const EmployeeAttendance = () => {
       return acc;
     }, {})
   );
-  console.log(groupedDatas);
   // Add missing weekend days between the data
   const weekendEntriess = [];
   const weekdayEntriess = [];
@@ -269,7 +267,7 @@ console.log("concernData", concernData)
       name,
       email,
       message:Punchmessage,
-      date: moment().format("MMMM Do YYYY, h:mm:ss a"),
+      date: punchDate,
       punchType: punchStatus,
       status: "Pending",
       user_id,
@@ -545,7 +543,7 @@ console.log("concernData", concernData)
     if (userToken) {
       // Use the <Navigate /> component to redirect
     } else {
-      return navigate("/Login");
+      return navigate("/login");
     }
   }, [
     userToken,
@@ -680,6 +678,8 @@ useEffect(()=>{
                   <option value="Punch In">Punch In</option>
                   <option value="Punch Out">Punch Out</option>
                 </select>
+
+                <input type="date" value={punchDate} onChange={(e)=>setPunchDate(e.target.value)}/>
               </div>
             </div>
             <div className="col">

@@ -28,19 +28,19 @@ const Login = () => {
         `${import.meta.env.VITE_BACKEND_API}/loginuser`,
         payload,  { withCredentials: true } 
       );
-      console.log(response.data);
+      console.log(response?.data);
       userToken = response?.data.token
       // localStorage.setItem("user", response?.data);
       localStorage.setItem("user", JSON.stringify(response?.data.user));
 
-      localStorage.setItem("userToken", response?.data.token);
+      localStorage.setItem("userToken", response?.data?.token);
       // Cookies.set("userToken", response.data.token);
-      toast.success(response.data.status, {});
+      toast.success(response?.data?.status, {});
       setTimeout(() => {
         window.location.href = "/";
       }, 1200);
     } catch (error) {
-      toast.warning(error.response.data.status, {});
+      toast.warning(error?.response?.data.status, {});
     }
     if (userToken) {
       return <Navigate to="/" />;

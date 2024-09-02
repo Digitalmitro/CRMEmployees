@@ -9,6 +9,9 @@ import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import Cookies from 'js-cookie'
 import moment from 'moment'
+import Push from 'push.js'
+import DM from '../../assets/logo.png'
+
 // import '../style/ProjectDrawer.css'
 import { createStyles, useTheme } from 'antd-style';
 
@@ -76,6 +79,10 @@ const SalesDrawer = ({ open, onClose, refreshData }) => {
       const res = await axios.post(`${import.meta.env.VITE_BACKEND_API}/sale`, payload)
 
       toast.success(res.data, {})
+      Push.create(`Hey ${useName}`, {
+        body: `You have successfully ceated a Lead ${name}'?`,
+        icon: `${DM}`,
+    })
       setName('')
       setEmail('')
       setPhone('')
@@ -99,7 +106,7 @@ const SalesDrawer = ({ open, onClose, refreshData }) => {
       }
       await axios.post(`${import.meta.env.VITE_BACKEND_API}/notification`, noti)
     } catch (error) {
-      toast.warning(error.response.data, {})
+      toast.warning(error?.response?.data, {})
     }
   }
   useEffect(() => {

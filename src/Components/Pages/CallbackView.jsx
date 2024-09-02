@@ -76,7 +76,7 @@ const CallbackView = () => {
         if (userToken) {
             // Use the <Navigate /> component to redirect
         } else {
-            return navigate("/Login");
+            return navigate("/login");
         }
     }, [userToken]);
 

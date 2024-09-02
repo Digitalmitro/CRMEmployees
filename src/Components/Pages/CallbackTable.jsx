@@ -126,7 +126,7 @@ console.log("NewProfile", NewProfile)
         if (userToken) {
             // Use the <Navigate /> component to redirect
         } else {
-            return navigate('/Login')
+            return navigate('/login')
         }
     }, [searchTerm, sortBy, userToken])
 
