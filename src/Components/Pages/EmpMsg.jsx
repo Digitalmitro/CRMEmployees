@@ -237,7 +237,7 @@ const EmpMsg = () => {
                       </p>
                      {/* <div  className="d-flex align-items-end gap-2 justify-content-between"> */}
                      <p style={styles.messageText}>{item.message}</p>
-                     <p style={styles.messageTime}>{typeof item.time === "string" ? item.time : moment(item.time).format("DD/MM/YYYY HH:mm")}</p>
+                     <p style={styles.messageTime}>{moment(item.time).format("DD/MM/YYYY HH:mm")}</p>
                      {/* </div> */} 
                     </div>
                     <div ref={messagesEndRef} /> 
