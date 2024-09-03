@@ -69,6 +69,8 @@ const EmpMsg = () => {
     }
   }, [formData.user_id]);
 
+  const curTime = new Date();
+
   const handleSendMessage = async () => {
     if (input.trim() !== "") {
       const newMessage = {
@@ -79,7 +81,7 @@ const EmpMsg = () => {
         message: input,
         status:'false',
         role: "user",
-        time: moment().format("h:mm:ss a"),
+        time: curTime,
         userId: formData.user_id,
       };
 
@@ -235,7 +237,7 @@ const EmpMsg = () => {
                       </p>
                      {/* <div  className="d-flex align-items-end gap-2 justify-content-between"> */}
                      <p style={styles.messageText}>{item.message}</p>
-                     <p style={styles.messageTime}>{item.time}</p>
+                     <p style={styles.messageTime}>{typeof item.time === "string" ? item.time : moment(item.time).format("DD/MM/YYYY HH:mm")}</p>
                      {/* </div> */} 
                     </div>
                     <div ref={messagesEndRef} /> 
