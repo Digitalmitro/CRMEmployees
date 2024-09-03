@@ -40,10 +40,11 @@ const EmployeeAttendance = () => {
   const [date, setDate] = useState("");
   const [Punchmessage, setPunchMessage] = useState("");
   const [concernData, setConcernData] = useState([]);
+  const [callApi, setCallApi] = useState(false);
+  const [halfDayToday, setHalfDayToday] = useState(false);
 
   const [punchStatus, setPunchStatus] = useState("");
   const [punchDate, setPunchDate] = useState("");
-console.log("punchDate", punchDate)
   //model
   const [msgDate, setMsgDate] = useState("");
   const [leaveConcern, setleaveConcern] = useState("");
@@ -61,10 +62,26 @@ console.log("punchDate", punchDate)
     setIsModalVisible(false);
   };
 
+
+
+  async function getData() {
+    try{
+      const res = await axios.get(
+        `${import.meta.env.VITE_BACKEND_API}/attendance/${user_id}`
+      );
+      setAttendanceData(res.data?.attendance);
+    }catch(err){
+      console.log(err)
+    }
+    }
+
   const handleLeaveSubmit = async (values) => {
     try {
       const { leaveConcern, date } = values;
-      const formattedDate = moment(date).format("MMMM Do YYYY");
+
+      const formattedDate = moment(date.$d).format("MMMM Do YYYY");
+      console.log("date", formattedDate)
+
       // const user_id =user_id;
       const payload = {
         name: name,
@@ -77,9 +94,9 @@ console.log("punchDate", punchDate)
       };
       // Send POST request to the server
       await axios.post(`${import.meta.env.VITE_BACKEND_API}/concern`, payload,{
-        headers:userToken
+        headers:{token: userToken}
       });
-
+      setCallApi(!callApi)
       message.success("Concern Created and associated with Admin");
       form.resetFields();
       setIsModalVisible(false);
@@ -90,7 +107,7 @@ console.log("punchDate", punchDate)
   };
 
   const groupedDatas = Object.values(
-    attendanceData.reduce((acc, curr) => {
+    attendanceData?.reduce((acc, curr) => {
       // Group entries by currentDate
       const currentDate = curr.currentDate;
       // console.log("Current:", curr);
@@ -220,8 +237,9 @@ console.log("punchDate", punchDate)
 
     const punchInTime = moment(entry.punchin, "h:mm:ss A");
     const punchOutTime = moment(entry.punchOut, "h:mm:ss A");
-
+console.log("count", entry.punchin, entry.punchOut)
     const duration = moment.duration(punchOutTime.diff(punchInTime)).asHours();
+    console.log("duraction", duration)
     return duration < 7 && duration > 0;
   }).length;
 
@@ -239,7 +257,7 @@ console.log("punchDate", punchDate)
   const getConcernData = async() => {
     try{
       const ConcernRes = await axios.get(`${import.meta.env.VITE_BACKEND_API}/concern/${user_id}`, {
-        headers:userToken
+        headers:{token: userToken}
       });
   setConcernData(ConcernRes.data.reverse())
     }catch(err){
@@ -263,6 +281,7 @@ console.log("concernData", concernData)
   };
   const handleOk = async () => {
     setIsModalOpen(false);
+
     const payload = {
       name,
       email,
@@ -276,10 +295,13 @@ console.log("concernData", concernData)
       const res = await axios.post(
         `${import.meta.env.VITE_BACKEND_API}/concern`,
         payload, {
-          headers:userToken
+          headers:{
+            token:userToken
+          }
         }
       );
       toast.info(res.data, {});
+      getConcernData()
     } catch (error) {}
   };
   const handledOk = async () => {
@@ -324,10 +346,13 @@ console.log("concernData", concernData)
       setLoading(false);
     }, 750);
   }
-
+ 
+useEffect(()=> {
+getData()
+},[])  
   const handlePunchIn = async () => {
     const currentTime = new Date().toLocaleTimeString();
-    setPunchin(currentTime); // Update punchin state with current time
+    setPunchin(currentTime); 
     setHide(!hide);
     setIframe(true);
     const currentDate = moment().format("MMM Do YY");
@@ -375,8 +400,8 @@ console.log("concernData", concernData)
     } catch (error) {
       console.error("Error sending checkout data:", error);
     }
-    getAttData(); // Refresh attendance data after check-out
-    setCheckoutClicked(true); // Set checkout clicked to true
+    getAttData(); 
+    setCheckoutClicked(true); 
   };
 
   const currentDate = moment().format("MMM Do YY");
@@ -389,12 +414,15 @@ console.log("concernData", concernData)
     setUserIP(data.ip);
   };
 
-  async function getData() {
-    const res = await axios.get(
-      `${import.meta.env.VITE_BACKEND_API}/attendance/${user_id}`
-    );
-    setAttendanceData(res.data.attendance);
-  }
+ 
+
+
+
+  // Add missing weekend days between the data
+  const weekendEntries = [];
+  const weekdayEntries = [];
+
+
   const groupedData = Object.values(
     attendanceData.reduce((acc, curr) => {
       // Group entries by currentDate
@@ -439,11 +467,9 @@ console.log("concernData", concernData)
       return acc;
     }, {})
   );
-  console.log(groupedData);
-  // Add missing weekend days between the data
-  const weekendEntries = [];
-  const weekdayEntries = [];
 
+  
+  console.log(groupedData);
   // Iterate over groupedData to add missing entries
   groupedData.forEach((entry, index) => {
     if (index > 0) {
@@ -572,6 +598,8 @@ console.log("concernData", concernData)
     return `${hours}:${minutes}:${seconds}`;
   };
 
+
+
   let filteredPunchin = [];
 
   if (data) {
@@ -651,9 +679,44 @@ console.log("concernData", concernData)
       "Cannot calculate time difference: Missing login or logout data"
     );
   }
+
+  const isTodayHalfDay = (punchin, punchOut) => {
+    const today = moment().startOf('day'); // Start of today (midnight)
+    const punchInTime1 = moment(punchin, "h:mm:ss A");
+    const punchOutTime1 = moment(punchOut, "h:mm:ss A");
+    console.log("time1 ", punchInTime1, punchOutTime1)
+    const duration1 = moment.duration(punchOutTime1.diff(punchInTime1)).asHours();
+
+    // const duration = moment.duration(punchOutTime1.diff(punchInTime1)).asHours();
+    console.log("today ", duration1 )
+
+    // Check if both punch-in and punch-out are from today
+    if (duration1 < 7 && duration1 > 0 ) {
+      // Check if the duration is less than 7 hours
+      return true;
+    }
+  
+    return false; // Not a half-day if the punches are not from today
+  };
+  
+  // Usage example
+  const punchinDay = filteredPunchin[0]?.punchin;
+  const punchOutDay = filteredPunchOut[0]?.punchOut;
+  
+  // const isHalfDayToday = punchinDay && punchOutDay && isTodayHalfDay(punchinDay, punchOutDay);
+  // console.log("ehejhg", punchinDay, punchOutDay)
+  // if (isHalfDayToday) {
+  //   setHalfDayToday(true)
+  //   console.log("half day.");
+
+  // } else {
+  //   console.log("full day.");
+  // }
+  
+
 useEffect(()=>{
   getConcernData()
-},[])
+},[callApi])
   
   return (
     <>
@@ -669,6 +732,9 @@ useEffect(()=>{
           <div className="row">
             <div className="col">
               <div className="col">
+                <h6>Date of Issue Occurred</h6>
+                <input type="date" value={punchDate} onChange={(e)=>setPunchDate(e.target.value)}/>
+
                 <h6>Punch Status</h6>
                 <select
                   value={punchStatus}
@@ -679,7 +745,7 @@ useEffect(()=>{
                   <option value="Punch Out">Punch Out</option>
                 </select>
 
-                <input type="date" value={punchDate} onChange={(e)=>setPunchDate(e.target.value)}/>
+               
               </div>
             </div>
             <div className="col">
@@ -904,7 +970,7 @@ useEffect(()=>{
                   {" "}
                   {filteredPunchOut.length > 0 ? (
                     <span style={{ color: isLate ? "red" : "green" }}>
-                      {filteredPunchOut[0].status}
+                      {filteredPunchOut[0].status} {halfDayToday ?? "Half Day"}
                     </span>
                   ) : (
                     <span style={{ color: isLate ? "red" : "green" }}>
@@ -913,9 +979,10 @@ useEffect(()=>{
                   )}{" "}
                 </span>
               </h6>
+              {/* <h6>Half Day</h6> */}
             </div>
           </div>
-        {/* </div> */}b
+        {/* </div> */}
         {/* -------emp--punch--cards----- */}
     
         {/* <div className="emp-cards mb-5"  style={{ marginTop: "10px" }}> */}

@@ -8,10 +8,14 @@ import salesImg from '../../assets/sales-img.png'
 import projectImg from '../../assets/project-12.png'
 import { useEffect } from "react";
 import axios from 'axios'
+import { useState } from "react";
 const Dashboard = () => {
 
 
   const userToken = localStorage.getItem('userToken')
+  const user = JSON.parse(localStorage.getItem('user'))
+  const [dataLength, setDataLength] = useState()
+  console.log("user", user)
 console.log("userToken", userToken)
   const checkToken = async () => {
     if(userToken){
@@ -32,6 +36,23 @@ console.log("userToken", userToken)
     }
   };
 
+
+useEffect(()=>{
+  
+  async function getDashboardDataLength() {
+    try{
+      const res = await axios.get(
+        `${import.meta.env.VITE_BACKEND_API}/employeesdashboard/${user._id}`
+      );
+      setDataLength(res.data);
+    }catch(err){
+      console.log(err)
+    }
+    }
+
+    getDashboardDataLength()
+},[])
+console.log("lenghte", dataLength)
   useEffect(() => {
     checkToken();
   }, [userToken]);
@@ -50,7 +71,7 @@ console.log("userToken", userToken)
          <img src={attendanceimg} alt="" style={{width:"70px" ,height:"70px",textAlign:"center"}}/>
          </div>
           <div className="gridtext d-flex align-items-center justify-content-center" style={{color:"#222"}}>
-          <h5 style={{fontSize:"0.9rem"}}>Attendace  List: {moment().format('MMMM')}</h5>
+          <h5 style={{fontSize:"0.9rem"}}>Attendace  List :{moment().format('MMMM')} - {dataLength?.attendance} </h5>
           {/* <span>(+84.7%  <GoArrowUp /> )</span> */}
           </div>
          
@@ -70,8 +91,8 @@ console.log("userToken", userToken)
          </div>
           <div className="gridtext d-flex align-items-center justify-content-center">
             
-          <h6 style={{fontSize:"0.9rem"}}>All Callback: 914</h6>
-          <span>(+84.7%  <GoArrowUp /> )</span>
+          <h6 style={{fontSize:"0.9rem"}}>All Callback: {dataLength?.callback}</h6>
+          {/* <span>(+84.7%  <GoArrowUp /> )</span> */}
           </div>
          
           </div>
@@ -88,8 +109,8 @@ console.log("userToken", userToken)
          <img src={salesImg} alt="" style={{width:"60px", height:"60px",textAlign:"center"}}/>
          </div>
           <div className="gridtext d-flex  align-items-center justify-content-center">
-          <h6 style={{fontSize:"0.9rem"}}>All Sales: 43</h6>
-          <span>(+84.7%  <GoArrowUp /> )</span>
+          <h6 style={{fontSize:"0.9rem"}}>All Sales: {dataLength?.sale}</h6>
+          {/* <span>(+84.7%  <GoArrowUp /> )</span> */}
           </div>
            
           
@@ -106,8 +127,8 @@ console.log("userToken", userToken)
          <img src={transferImg} alt="" style={{width:"80px", height:"60px",textAlign:"center"}}/>
          </div>
           <div className="gridtext d-flex  align-items-center justify-content-center">
-          <h6 style={{fontSize:"0.9rem"}}>All Transfer: 43</h6>
-          <span>(+84.7%  <GoArrowUp /> )</span>
+          <h6 style={{fontSize:"0.9rem"}}>All Transfer: {dataLength?.transfer}</h6>
+          {/* <span>(+84.7%  <GoArrowUp /> )</span> */}
           </div>
           
        
@@ -125,7 +146,7 @@ console.log("userToken", userToken)
          <img src={projectImg} alt="" style={{width:"50px", height:"50px",textAlign:"center"}}/>
          </div>
           <div className="gridtext d-flex align-items-center justify-content-center">
-          <h6 style={{fontSize:"0.9rem"}}>Projects</h6>
+          <h6 style={{fontSize:"0.9rem"}}>Projects:  {dataLength?.project}</h6>
           {/* <span>(+84.7%  <GoArrowUp /> )</span> */}
           </div>
           

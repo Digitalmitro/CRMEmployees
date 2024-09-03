@@ -17,7 +17,6 @@ import pngIcon from '../../assets/icons/png-icons.svg';
 import { useNavigate, useParams } from 'react-router-dom';
 
 const Doccs = () => {
-  const adminToken = localStorage.getItem('token')
   const [modalOpened, setModalOpened] = useState(false);
   const [docss, setdocss] = useState([]);
   const [documents, setDocuments] = useState([]);
@@ -130,9 +129,7 @@ const Doccs = () => {
 
   console.log("all document",documents)
   const getUsersData = async () => {
-    const res = await axios.get(`${import.meta.env.VITE_BACKEND_API}/alluser`, {
-      headers: { token: adminToken },
-    });
+    const res = await axios.get(`${import.meta.env.VITE_BACKEND_API}/alluser`);
 
     setUserData(res.data);
   };

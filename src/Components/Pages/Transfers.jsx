@@ -52,7 +52,6 @@ const Transfers = () => {
   const Getdata = async () => {
     const res = await axios.get(`${import.meta.env.VITE_BACKEND_API}/transfer-user/${user_id}`)
     setData(res.data.transfer)
-    filterAndSortResults(searchTerm, sortBy, res.data.transfer)
   }
   console.log(data)
   const handleDel = async (id) => {
@@ -129,13 +128,13 @@ const Transfers = () => {
     await axios.post(`${import.meta.env.VITE_BACKEND_API}/notification`, noti)
   }
   useEffect(() => {
-    Getdata()
     if (userToken) {
+    Getdata()
       // Use the <Navigate /> component to redirect
     } else {
       return navigate('/login')
     }
-  }, [searchTerm, sortBy, userToken])
+  }, [userToken])
   // Function to handle search term change
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
@@ -145,9 +144,9 @@ const Transfers = () => {
     Getdata(); // Refresh data function
   };
 
-  const filterAndSortResults = (searchTerm, sortBy, data) => {
-    let filteredResults = data.filter((item) =>
-      Object.values(item).join(' ').toLowerCase().includes(searchTerm.toLowerCase()),
+  const filterAndSortResults = () => {
+    let filteredResults = data?.filter((item) =>
+      Object.values(item).join(' ').toLowerCase().includes(searchTerm?.toLowerCase()),
     )
 
     if (sortBy === 'Date') {
@@ -243,15 +242,10 @@ const Transfers = () => {
   });
 
 
+// useEffect(()=>{
+//   filterAndSortResults()
 
-
-
-
-  const handleChange = (date, dateString) => {
-    console.log(date, dateString);
-  };
-
-
+// },[searchTerm, sortBy, data])
 
     return (
         <>
