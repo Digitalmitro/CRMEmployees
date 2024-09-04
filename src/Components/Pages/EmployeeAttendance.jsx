@@ -23,80 +23,79 @@ import {
   message,
 } from "antd";
 
-const EmployeeAttendance = () => {
-  const userToken = localStorage.getItem("userToken");
-  const Profile = localStorage.getItem("user");
-  const NewProfile = JSON.parse(Profile);
-  const name = NewProfile?.name;
-  const email = NewProfile?.email;
-  const user_id = NewProfile?._id;
+const userToken = localStorage.getItem("userToken");
+const Profile = localStorage.getItem("user");
+const NewProfile = JSON.parse(Profile);
+const name = NewProfile?.name;
+const email = NewProfile?.email;
+const user_id = NewProfile?._id;
 
-  const [hidden, setHidden] = useState(false);
-  const [data, setData] = useState([]);
+const EmployeeAttendance = () => {
   const navigate = useNavigate();
+
+  const [isOpen, setIsOpen] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAttendanceOpen, setIsAttendance] = useState(false);
-  const [selectedMonth, setSelectedMonth] = useState("");
-  const [date, setDate] = useState("");
-  const [Punchmessage, setPunchMessage] = useState("");
-  const [concernData, setConcernData] = useState([]);
-  const [callApi, setCallApi] = useState(false);
-  const [halfDayToday, setHalfDayToday] = useState(false);
-
-  const [punchStatus, setPunchStatus] = useState("");
-  const [punchDate, setPunchDate] = useState("");
-  //model
-  const [msgDate, setMsgDate] = useState("");
-  const [leaveConcern, setleaveConcern] = useState("");
-  const [attendanceData, setAttendanceData] = useState([]);
-
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const [callApi, setCallApi] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const toggle = () => setIsOpen(!isOpen);
+
+  const [concernData, setConcernData] = useState([]);
+  const [attendanceData, setAttendanceData] = useState([]);
+  const [userIP, setUserIP] = useState(null);
+  const [data, setData] = useState([]);
   const [form] = Form.useForm();
 
-  //
+  const [punchStatus, setPunchStatus] = useState("");
+  const [isPunchOutDone, setIsPunchOutDone] = useState(true);
+  const [Punchmessage, setPunchMessage] = useState("");
+  const [firstPunchIn, setfirstPunchIn] = useState("");
+  const [showFinalPunchOut, setshowFinalPunchOut] = useState("");
+  
+
+  const [punchDate, setPunchDate] = useState("");
+  const payload = {
+    name,
+    email,
+    message: Punchmessage,
+    date: punchDate,
+    punchType: punchStatus,
+    status: "Pending",
+    user_id,
+  };
+
   const showLeaveModal = () => {
     setIsModalVisible(true);
   };
-
   const handleLeaveCancel = () => {
     setIsModalVisible(false);
   };
-
-
-
-  async function getData() {
-    try{
-      const res = await axios.get(
-        `${import.meta.env.VITE_BACKEND_API}/attendance/${user_id}`
-      );
-      setAttendanceData(res.data?.attendance);
-    }catch(err){
-      console.log(err)
-    }
-    }
-
   const handleLeaveSubmit = async (values) => {
     try {
       const { leaveConcern, date } = values;
 
       const formattedDate = moment(date.$d).format("MMMM Do YYYY");
-      console.log("date", formattedDate)
+      console.log("date", formattedDate);
 
       // const user_id =user_id;
       const payload = {
         name: name,
         email: email,
-        message:leaveConcern,
+        message: leaveConcern,
         date: formattedDate,
         status: "pending",
-        punchType:"Leave Application",
+        punchType: "Leave Application",
         user_id,
       };
       // Send POST request to the server
-      await axios.post(`${import.meta.env.VITE_BACKEND_API}/concern`, payload,{
-        headers:{token: userToken}
+      await axios.post(`${import.meta.env.VITE_BACKEND_API}/concern`, payload, {
+        headers: { token: userToken },
       });
-      setCallApi(!callApi)
+      setCallApi(!callApi);
       message.success("Concern Created and associated with Admin");
       form.resetFields();
       setIsModalVisible(false);
@@ -105,6 +104,224 @@ const EmployeeAttendance = () => {
       console.error(error);
     }
   };
+
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+  const showAttendance = () => {
+    setIsAttendance(true);
+  };
+  const handleOk = async () => {
+    setIsModalOpen(false);
+    postConcernData();
+  };
+  const handledOk = async () => {
+    setIsAttendance(false);
+  };
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+  const handleCancels = () => {
+    setIsAttendance(false);
+  };
+
+  const handleChange = (date, dateString) => {
+    console.log(date, dateString);
+  };
+  const handleMonthChange = (event) => {
+    setSelectedMonth(event.target.value);
+  };
+
+  function handleLoading() {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+    }, 750);
+  }
+
+  async function getData() {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_BACKEND_API}/attendance/${user_id}`
+      );
+      setAttendanceData(res.data?.attendance);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  async function getTodayAttendance() {
+    const currentDate = new Date().toISOString()
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_BACKEND_API}/attendance?user_id=${user_id}&currentDate=${currentDate}`
+      );
+      console.log(res?.data)
+      
+      const convertToIST = (utcDate) => {
+        const date = new Date(utcDate);
+        // Convert to IST (UTC+5:30)
+        date.setHours(date.getHours() + 5);
+        date.setMinutes(date.getMinutes() + 30);
+        return date;
+      };
+
+      const formatTime = (date) => {
+        return new Intl.DateTimeFormat('en-IN', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true
+        }).format(date);
+      };
+
+
+     const punchesList = res.data?.punches
+       if(punchesList?.length>0){
+        const showPunchIn = punchesList[0]?.punchIn
+          console.log(showPunchIn)
+          const punchInData = convertToIST(showPunchIn)
+          const formattedPunchIn = formatTime(punchInData)
+          setfirstPunchIn(formattedPunchIn)
+          let showPunchOut 
+          if(!punchesList[punchesList.length - 1]?.punchOut){
+            setIsPunchOutDone(false)
+
+          }else{
+            showPunchOut = convertToIST(punchesList[punchesList.length - 1]?.punchOut)
+            const formatedPunchOut = formatTime(showPunchOut)
+            setshowFinalPunchOut(formatedPunchOut)
+            setIsPunchOutDone(true)
+          }
+         
+    }
+      // setAttendanceData(res.data?.attendance);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+console.log("firstPunchIn", firstPunchIn, showFinalPunchOut)
+useEffect(()=> {
+  getTodayAttendance()
+},[])
+
+  const getIp = async () => {
+    // Fetch user's IP address
+    const response = await fetch("https://api.ipify.org?format=json");
+    const data = await response.json();
+    setUserIP(data.ip);
+  };
+
+  const getConcernData = async () => {
+    try {
+      const ConcernRes = await axios.get(
+        `${import.meta.env.VITE_BACKEND_API}/concern/${user_id}`,
+        {
+          headers: { token: userToken },
+        }
+      );
+      setConcernData(ConcernRes.data.reverse());
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const postConcernData = async () => {
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_BACKEND_API}/concern`,
+        payload,
+        {
+          headers: {
+            token: userToken,
+          },
+        }
+      );
+      toast.info(res.data, {});
+      getConcernData();
+    } catch (error) {
+      console.log(err);
+    }
+  };
+
+  const handlePunchIn = async () => {
+    const istTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+    // Convert to ISO 8601 format by parsing and formatting it
+    const istDate = new Date(istTime);
+   const currentTime = istDate.toISOString();
+    setPunchin(currentTime);
+    const isLate =  checkinTime(currentTime) 
+    console.log("isLate", isLate)
+    const currentDate = istDate.toISOString();
+    console.log("currentTime", currentTime, "dsghs", currentDate)
+ 
+    try {
+      console.log("currentDate", currentDate)
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_API}/attendance`,
+        {
+          userName: name,
+          userEmail: email,
+          shiftType:NewProfile?.type,
+          punches:{
+            punchIn : currentTime
+          },
+          currentDate,
+          status:  isLate ? "Late" : "On Time",
+          ip: userIP,
+          user_id,
+        }
+      );
+      // console.log(response.data);
+      setHidden(true);
+      handleLoading();
+    } catch (error) {
+      console.error("Error sending checkin data:", error);
+    }
+    getData(); 
+
+  };
+
+
+  const handlePunchOut = async () => {
+    const istTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+    // Convert to ISO 8601 format by parsing and formatting it
+    const istDate = new Date(istTime);
+   const currentTime = istDate.toISOString();
+    setPunchin(currentTime);
+
+    const currentDate = istDate.toISOString();
+    console.log("currentTime", currentTime, "dsghs", currentDate)
+    try {
+      const response = await axios.put(
+        `${import.meta.env.VITE_BACKEND_API}/punchout`,
+        {
+         
+          punchOut: currentTime,
+          currentDate,
+          shiftType:NewProfile?.type,
+          user_id,
+        }
+      );
+      setHidden(false)
+      // console.log(response.data);
+    } catch (error) {
+      console.error("Error sending checkout data:", error);
+    }
+    getData();
+    setCheckoutClicked(true);
+  };
+  
+  
+
+
+  console.log("getAtten", attendanceData)
+
+  // const [date, setDate] = useState("");
+  const [halfDayToday, setHalfDayToday] = useState(false);
+  //model
+  const [msgDate, setMsgDate] = useState("");
+  const [leaveConcern, setleaveConcern] = useState("");
 
   const groupedDatas = Object.values(
     attendanceData?.reduce((acc, curr) => {
@@ -153,7 +370,6 @@ const EmployeeAttendance = () => {
   // Add missing weekend days between the data
   const weekendEntriess = [];
   const weekdayEntriess = [];
-
   // Iterate over groupedData to add missing entries
   groupedDatas.forEach((entry, index) => {
     if (index > 0) {
@@ -190,19 +406,14 @@ const EmployeeAttendance = () => {
       }
     }
   });
-
   // Merge the original data with the added weekend and weekday entries
   const finalDatas = [...groupedDatas, ...weekendEntriess, ...weekdayEntriess];
-
   // Sort the data by currentDate
   finalDatas.sort(
     (a, b) =>
       moment(a.currentDate, "MMM Do YY").valueOf() -
       moment(b.currentDate, "MMM Do YY").valueOf()
   );
-
-  console.log(finalDatas);
-
   // Filter the data based on the selected month and date
   const filteredDatas = finalDatas.filter((entry) => {
     // Check if the entry's currentDate includes the selected month
@@ -220,11 +431,6 @@ const EmployeeAttendance = () => {
     // If no date is selected, return true to include all entries for the selected month
     return !date;
   });
-  console.log(filteredDatas);
-
-  useEffect(() => {
-    getData();
-  }, [selectedMonth]);
 
   const totalLate = filteredDatas?.filter((e) => e.status === "LATE").length;
   const totalAbs = filteredDatas?.filter((e) => e.status === "Absent").length;
@@ -237,87 +443,11 @@ const EmployeeAttendance = () => {
 
     const punchInTime = moment(entry.punchin, "h:mm:ss A");
     const punchOutTime = moment(entry.punchOut, "h:mm:ss A");
-console.log("count", entry.punchin, entry.punchOut)
+    console.log("count", entry.punchin, entry.punchOut);
     const duration = moment.duration(punchOutTime.diff(punchInTime)).asHours();
-    console.log("duraction", duration)
+    console.log("duraction", duration);
     return duration < 7 && duration > 0;
   }).length;
-
-  const getAttData = async () => {
-    try{
-      const res = await axios.get(
-      `${import.meta.env.VITE_BACKEND_API}/attendance/${user_id}`
-    );
-    
-    setData(res.data.attendance);
-    }catch(err){
-      console.log(err)
-    }
-  };
-  const getConcernData = async() => {
-    try{
-      const ConcernRes = await axios.get(`${import.meta.env.VITE_BACKEND_API}/concern/${user_id}`, {
-        headers:{token: userToken}
-      });
-  setConcernData(ConcernRes.data.reverse())
-    }catch(err){
-      console.log(err)
-    }
-  }
-console.log("concernData", concernData)
-  const handleChange = (date, dateString) => {
-    console.log(date, dateString);
-  };
-
-  const handleMonthChange = (event) => {
-    setSelectedMonth(event.target.value);
-  };
-
-  const showModal = () => {
-    setIsModalOpen(true);
-  };
-  const showAttendance = () => {
-    setIsAttendance(true);
-  };
-  const handleOk = async () => {
-    setIsModalOpen(false);
-
-    const payload = {
-      name,
-      email,
-      message:Punchmessage,
-      date: punchDate,
-      punchType: punchStatus,
-      status: "Pending",
-      user_id,
-    };
-    try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_BACKEND_API}/concern`,
-        payload, {
-          headers:{
-            token:userToken
-          }
-        }
-      );
-      toast.info(res.data, {});
-      getConcernData()
-    } catch (error) {}
-  };
-  const handledOk = async () => {
-    setIsAttendance(false);
-   
-  };
-
-  const handleCancel = () => {
-    setIsModalOpen(false);
-  };
-  const handleCancels = () => {
-    setIsAttendance(false);
-  };
-
-  const [isOpen, setIsOpen] = useState(true);
-  const toggle = () => setIsOpen(!isOpen);
 
   // location tracker
   const [latitude, setLatitude] = useState("");
@@ -339,89 +469,31 @@ console.log("concernData", concernData)
 
   const [checkoutClicked, setCheckoutClicked] = useState(false);
 
-  const [loading, setLoading] = useState(false);
-  function handleLoading() {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-    }, 750);
-  }
  
-useEffect(()=> {
-getData()
-},[])  
-  const handlePunchIn = async () => {
-    const currentTime = new Date().toLocaleTimeString();
-    setPunchin(currentTime); 
-    setHide(!hide);
-    setIframe(true);
-    const currentDate = moment().format("MMM Do YY");
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_API}/attendance`,
-        {
-          userName: name,
-          userEmail: email,
-          punchin: currentTime,
-          currentDate,
-          ip: userIP,
-          user_id,
-        }
-      );
-      // console.log(response.data);
-      setHidden(true);
-      handleLoading();
-    } catch (error) {
-      console.error("Error sending checkin data:", error);
-    }
-    getAttData(); // Refresh attendance data after check-in
-  };
-
-  const handlePunchOut = async () => {
-    const currentTime = new Date().toLocaleTimeString();
-    setPunchOut(currentTime);
-    setHide(!hide);
-    const currentDate = moment().format("MMM Do YY");
-    const status = isLate ? "LATE" : "In Time";
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_API}/attendance`,
-        {
-          userName: name,
-          userEmail: email,
-          punchOut: currentTime,
-          currentDate,
-          status,
-          ip: userIP,
-          user_id,
-        }
-      );
-      // console.log(response.data);
-    } catch (error) {
-      console.error("Error sending checkout data:", error);
-    }
-    getAttData(); 
-    setCheckoutClicked(true); 
-  };
+  
 
   const currentDate = moment().format("MMM Do YY");
 
-  const [userIP, setUserIP] = useState(null);
-  const getIp = async () => {
-    // Fetch user's IP address
-    const response = await fetch("https://api.ipify.org?format=json");
-    const data = await response.json();
-    setUserIP(data.ip);
+  const getLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLatitude(position.coords.latitude);
+          setLongitude(position.coords.longitude);
+          setLocationPermission(true);
+        },
+        (error) => {
+          console.log("Error getting location:", error);
+        }
+      );
+    } else {
+      console.log("Geolocation is not supported by this browser.");
+    }
   };
-
- 
-
-
 
   // Add missing weekend days between the data
   const weekendEntries = [];
   const weekdayEntries = [];
-
 
   const groupedData = Object.values(
     attendanceData.reduce((acc, curr) => {
@@ -467,9 +539,6 @@ getData()
       return acc;
     }, {})
   );
-
-  
-  console.log(groupedData);
   // Iterate over groupedData to add missing entries
   groupedData.forEach((entry, index) => {
     if (index > 0) {
@@ -506,79 +575,28 @@ getData()
       }
     }
   });
-
   // Merge the original data with the added weekend and weekday entries
   const finalData = [...groupedData, ...weekendEntries, ...weekdayEntries];
-
   // Sort the data by currentDate
   finalData.sort(
     (a, b) =>
       moment(a.currentDate, "MMM Do YY").valueOf() -
       moment(b.currentDate, "MMM Do YY").valueOf()
   );
-
-  console.log(finalData);
-
   // Filter the data based on the selected month and date
   const filteredData = finalData.filter((entry) => {
     // Check if the entry's currentDate includes the selected month
     if (!entry.currentDate.includes(selectedMonth)) {
       return false;
     }
-
     // Check if the entry's currentDate matches the selected date
     const formattedDate = moment(date).format("MMM Do YY");
-    // console.log(formattedDate);
     if (date && entry.currentDate === formattedDate) {
       return true;
     }
-
     // If no date is selected, return true to include all entries for the selected month
     return !date;
   });
-  console.log(filteredData);
-
-  // console.log("attdata", data);
-
-  useEffect(() => {
-    getData();
-
-    getAttData();
-    getIp();
-    const getLocation = () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            setLatitude(position.coords.latitude);
-            setLongitude(position.coords.longitude);
-            setLocationPermission(true);
-          },
-          (error) => {
-            console.log("Error getting location:", error);
-          }
-        );
-      } else {
-        console.log("Geolocation is not supported by this browser.");
-      }
-    };
-
-    getLocation();
-    if (punchin && punchOut) {
-      setTimeDifferenceMinutes(calculateTimeDifference(punchin, punchOut));
-    }
-    if (userToken) {
-      // Use the <Navigate /> component to redirect
-    } else {
-      return navigate("/login");
-    }
-  }, [
-    userToken,
-    punchin,
-    punchOut,
-    currentDate,
-    timeDifferenceMinutes,
-    userIP,
-  ]);
 
   const calculateTimeDifference = (time1, time2) => {
     const format = "hh:mm:ss A";
@@ -598,10 +616,7 @@ getData()
     return `${hours}:${minutes}:${seconds}`;
   };
 
-
-
   let filteredPunchin = [];
-
   if (data) {
     filteredPunchin = data.filter(
       (entry) =>
@@ -610,13 +625,11 @@ getData()
         entry.currentDate === currentDate
     );
   }
-
   // console.log(
   //   "punchin",
   //   filteredPunchin.length > 0 ? filteredPunchin : "No data available"
   // );
   let filteredPunchOut = [];
-
   if (data) {
     filteredPunchOut = data
       .filter(
@@ -632,33 +645,26 @@ getData()
   //   "punchout",
   //   filteredPunchOut.length > 0 ? filteredPunchOut : "No data available"
   // );
-
   let filteredTime = [];
-
   if (data) {
     filteredTime = data
       .filter((entry) => entry.hasOwnProperty("time"))
       .map((entry) => ({ ...entry, currentDate: getCurrentDateFormatted() }));
   }
-
   // console.log(
   //   "time",
   //   filteredTime.length > 0 ? filteredTime[0].time : "No data available"
   // );
-
   // console.log("test");
-
-  const isLate =
-    filteredPunchin.length > 0 && isCheckinLate(filteredPunchin[0].punchin);
+  // const isLate =
+    // filteredPunchin.length > 0 && isCheckinLate(filteredPunchin[0].punchin);
   let timeDifference = null;
-
   if (filteredPunchin.length > 0 && filteredPunchOut.length > 0) {
     // Assuming filteredPunchin and filteredPunchOut are arrays containing login and logout times respectively
     timeDifference = calculateTimeDifference(
       filteredPunchin[0].punchin,
       filteredPunchOut[0].punchOut
     );
-
     // console.log("Time Difference (minutes):", timeDifference);
     const currentDate = moment().format("MMM Do YY");
     try {
@@ -674,50 +680,60 @@ getData()
     } catch (error) {
       console.error("Error sending checkout data:", error);
     }
-  } else {
-    console.log(
-      "Cannot calculate time difference: Missing login or logout data"
-    );
-  }
+  } 
 
   const isTodayHalfDay = (punchin, punchOut) => {
-    const today = moment().startOf('day'); // Start of today (midnight)
+    const today = moment().startOf("day"); // Start of today (midnight)
     const punchInTime1 = moment(punchin, "h:mm:ss A");
     const punchOutTime1 = moment(punchOut, "h:mm:ss A");
-    console.log("time1 ", punchInTime1, punchOutTime1)
-    const duration1 = moment.duration(punchOutTime1.diff(punchInTime1)).asHours();
-
+    console.log("time1 ", punchInTime1, punchOutTime1);
+    const duration1 = moment
+      .duration(punchOutTime1.diff(punchInTime1))
+      .asHours();
     // const duration = moment.duration(punchOutTime1.diff(punchInTime1)).asHours();
-    console.log("today ", duration1 )
-
+    console.log("today ", duration1);
     // Check if both punch-in and punch-out are from today
-    if (duration1 < 7 && duration1 > 0 ) {
+    if (duration1 < 7 && duration1 > 0) {
       // Check if the duration is less than 7 hours
       return true;
     }
-  
     return false; // Not a half-day if the punches are not from today
   };
-  
   // Usage example
   const punchinDay = filteredPunchin[0]?.punchin;
   const punchOutDay = filteredPunchOut[0]?.punchOut;
-  
   // const isHalfDayToday = punchinDay && punchOutDay && isTodayHalfDay(punchinDay, punchOutDay);
   // console.log("ehejhg", punchinDay, punchOutDay)
   // if (isHalfDayToday) {
   //   setHalfDayToday(true)
   //   console.log("half day.");
-
   // } else {
   //   console.log("full day.");
   // }
-  
 
-useEffect(()=>{
-  getConcernData()
-},[callApi])
-  
+  useEffect(() => {
+    getData();
+    // getAttData();
+    getIp();
+    getLocation();
+
+    if (punchin && punchOut) setTimeDifferenceMinutes(calculateTimeDifference(punchin, punchOut));
+    if (!userToken) return navigate("/login");  
+    
+  }, [userToken, punchin,   punchOut, currentDate,  timeDifferenceMinutes,  userIP, selectedMonth]);
+
+  // useEffect(() => {
+  //   getData();
+  // }, []);
+
+  // useEffect(() => {
+  //   getData();
+  // }, []);
+
+  useEffect(() => {
+    getConcernData();
+  }, [callApi]);
+
   return (
     <>
       {/* modal */}
@@ -733,7 +749,11 @@ useEffect(()=>{
             <div className="col">
               <div className="col">
                 <h6>Date of Issue Occurred</h6>
-                <input type="date" value={punchDate} onChange={(e)=>setPunchDate(e.target.value)}/>
+                <input
+                  type="date"
+                  value={punchDate}
+                  onChange={(e) => setPunchDate(e.target.value)}
+                />
 
                 <h6>Punch Status</h6>
                 <select
@@ -744,8 +764,6 @@ useEffect(()=>{
                   <option value="Punch In">Punch In</option>
                   <option value="Punch Out">Punch Out</option>
                 </select>
-
-               
               </div>
             </div>
             <div className="col">
@@ -769,7 +787,6 @@ useEffect(()=>{
               className="col-md-3"
               style={{ display: "flex", justifyContent: "center" }}
             >
-           
               <div className="emp-select-months-year">
                 <div className="emp-select-month dflex">
                   <select
@@ -849,7 +866,6 @@ useEffect(()=>{
             </div>
           </div>
         </div>
-      
       </Modal>
 
       {/* bOOK lEAVE  */}
@@ -859,26 +875,25 @@ useEffect(()=>{
         onCancel={handleLeaveCancel}
         footer={null}
       >
-        <Form
-          form={form}
-          onFinish={handleLeaveSubmit}
-        >
+        <Form form={form} onFinish={handleLeaveSubmit}>
           <Form.Item
             name="leaveConcern"
             label="Reason for leave"
-            rules={[{ required: true, message: 'Please enter your Concern Leave' }]}
+            rules={[
+              { required: true, message: "Please enter your Concern Leave" },
+            ]}
           >
             <Input.TextArea rows={4} />
           </Form.Item>
-          
+
           <Form.Item
             name="date"
             label="Date"
-            rules={[{ required: true, message: 'Please select a date' }]}
+            rules={[{ required: true, message: "Please select a date" }]}
           >
             <DatePicker />
           </Form.Item>
-          
+
           <Form.Item>
             <Button type="primary" htmlType="submit">
               Submit
@@ -903,9 +918,12 @@ useEffect(()=>{
               <button>+ BOOK LEAVE</button>
             </div>
 
-            <div className="empBtn my-4" style={{background:"green !important"}}>
-            <button  onClick={showModal}>Forget to Punch</button>
-          </div>
+            <div
+              className="empBtn my-4"
+              style={{ background: "green !important" }}
+            >
+              <button onClick={showModal}>Forget to Punch</button>
+            </div>
           </div>
           <div className="emp-card mt-2">
             <div className="emp-punch-clock my-2 ">
@@ -916,7 +934,7 @@ useEffect(()=>{
             <hr />
 
             <div className="emp-punchBtns">
-              {filteredPunchin.length > 0 && filteredPunchin[0]?.punchin ? (
+              {isPunchOutDone ? (
                 <div className="punch-out-btn" onClick={handlePunchOut}>
                   <img src={img5} style={{ marginRight: "5px" }} alt="" />
                   Punch Out
@@ -937,8 +955,6 @@ useEffect(()=>{
                 Check my current location
               </div>
             </div>
-          
-        
           </div>
 
           <div className="emp-card mt-2 ">
@@ -967,37 +983,34 @@ useEffect(()=>{
               <h6 className="my-2">
                 Status :{" "}
                 <span style={{ color: "#0BC81E" }}>
-                  {" "}
+                  {/* {" "}
                   {filteredPunchOut.length > 0 ? (
                     <span style={{ color: isLate ? "red" : "green" }}>
                       {filteredPunchOut[0].status} {halfDayToday ?? "Half Day"}
                     </span>
                   ) : (
-                    <span style={{ color: isLate ? "red" : "green" }}>
-                      {hidden ? (isLate ? "LATE" : "In Time") : null}
-                    </span>
-                  )}{" "}
+                    // <span style={{ color: isLate ? "red" : "green" }}>
+                    //   {hidden ? (isLate ? "LATE" : "In Time") : null}
+                    // </span>
+                  )}{" "} */}
                 </span>
               </h6>
               {/* <h6>Half Day</h6> */}
             </div>
           </div>
-        {/* </div> */}
-        {/* -------emp--punch--cards----- */}
-    
-        {/* <div className="emp-cards mb-5"  style={{ marginTop: "10px" }}> */}
-        <div
-            className="right-emp-calender mb-4 my-2"
-          
-          >
-          <h6 className="my-3">Calender</h6>
+          {/* </div> */}
+          {/* -------emp--punch--cards----- */}
+
+          {/* <div className="emp-cards mb-5"  style={{ marginTop: "10px" }}> */}
+          <div className="right-emp-calender mb-4 my-2">
+            <h6 className="my-3">Calender</h6>
             <div className="emp-dates">
               <div>
                 <p>Today</p>
                 <small>{moment().format("dddd, DD MMMM")}</small>
               </div>
               <div>
-                <hr style={{ border: "1px solid #D9D9D9",  }} />
+                <hr style={{ border: "1px solid #D9D9D9" }} />
               </div>
               <div>
                 <p>Tommorow</p>
@@ -1005,32 +1018,31 @@ useEffect(()=>{
               </div>
             </div>
             <div className="calender-title">
-           
-           <div className="right-calender-title">
-             <h6
-               style={{
-                 color: "#FF560E",
-                 cursor: "pointer",
-                 padding: "0px 2rem",
-               }}
-               onClick={showAttendance}
-             >
-               MONTHLY VIEW
-             </h6>
-             <a
-               href="/attendance-list"
-               style={{
-                 color: "#222",
-               }}
-             >
-               <h6>FULL CALENDER</h6>
-             </a>
-           </div>
-         </div>
+              <div className="right-calender-title">
+                <h6
+                  style={{
+                    color: "#FF560E",
+                    cursor: "pointer",
+                    padding: "0px 2rem",
+                  }}
+                  onClick={showAttendance}
+                >
+                  MONTHLY VIEW
+                </h6>
+                <a
+                  href="/attendance-list"
+                  style={{
+                    color: "#222",
+                  }}
+                >
+                  <h6>FULL CALENDER</h6>
+                </a>
+              </div>
+            </div>
           </div>
           <div className=" concernGrid mb-4 mt-3">
             <div className="emp-leave-balance p-2">
-              <h6 style={{color:"coral"}}>Raised Concern</h6>
+              <h6 style={{ color: "coral" }}>Raised Concern</h6>
               <a href="">
                 <img src={img7} alt="" />
               </a>
@@ -1038,7 +1050,9 @@ useEffect(()=>{
             <table class="table">
               <thead>
                 <tr>
-                  <th scope="col" style={{color:"blue"}}>Concern Type</th>
+                  <th scope="col" style={{ color: "blue" }}>
+                    Concern Type
+                  </th>
                   <th scope="col">Date</th>
                   <th scope="col">Approval</th>
                   <th scope="col">Concern details</th>
@@ -1046,20 +1060,39 @@ useEffect(()=>{
                 </tr>
               </thead>
               <tbody>
-               {concernData?.map((concern) => {
-                return(
-                  <tr>
-                  <td  style={{color: concern.punchType === "Punch Out" ? "blue": (concern.punchType === ("Leave Application" || "Leave") ? "red" : "green") }}>{concern.punchType}</td>
-                  <td>{concern.date}</td>
-                  <td style={{color: concern.status === "Approved" ? "green": (concern.status === "Denied" &&"red")}} >{concern.status}</td>
-                  <td>{concern.message}</td>
-                </tr>
-                )
-               })}
-               
+                {concernData?.map((concern) => {
+                  return (
+                    <tr>
+                      <td
+                        style={{
+                          color:
+                            concern.punchType === "Punch Out"
+                              ? "blue"
+                              : concern.punchType ===
+                                ("Leave Application" || "Leave")
+                              ? "red"
+                              : "green",
+                        }}
+                      >
+                        {concern.punchType}
+                      </td>
+                      <td>{concern.date}</td>
+                      <td
+                        style={{
+                          color:
+                            concern.status === "Approved"
+                              ? "green"
+                              : concern.status === "Denied" && "red",
+                        }}
+                      >
+                        {concern.status}
+                      </td>
+                      <td>{concern.message}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
-          
           </div>
         </div>
         <div
@@ -1069,9 +1102,7 @@ useEffect(()=>{
             justifyContent: "flex-start",
             marginLeft: "10px",
           }}
-        >
-        
-        </div>
+        ></div>
       </div>
     </>
   );
@@ -1089,14 +1120,31 @@ function getCurrentDateFormatted() {
   }`;
 }
 
-function isCheckinLate(checkinTime) {
-  // Assuming threshold time is between 10:41:00 AM and 12:00:00 PM
-  const startTime = moment("10:40:59 AM", "hh:mm:ss A");
-  const endTime = moment("7:59:00 PM", "hh:mm:ss A");
-  const checkin = moment(checkinTime, "hh:mm:ss A");
-  return checkin.isBetween(startTime, endTime);
-}
+const checkinTime = (currentTime) => {
+  if (NewProfile?.type === 'day') {
+    const punchInTime = moment(currentTime).format("HH:mm:ss");
+    const lateStart = moment().set({ hour: 10, minute: 40, second: 0 }).format("HH:mm:ss");
+    const lateEnd = moment().set({ hour: 11, minute: 30, second: 0 }).format("HH:mm:ss");
+    return moment(punchInTime).isBetween(lateStart, lateEnd, null, '[)');
+  } else if (NewProfile?.type === 'night') {
+    const punchInTime = moment(currentTime).format("HH:mm:ss");
+    const lateStart = moment().set({ hour: 20, minute: 10, second: 0 }).format("HH:mm:ss");
+    const lateEnd = moment().set({ hour: 21, minute: 10, second: 0 }).format("HH:mm:ss");
+    return moment(punchInTime).isBetween(lateStart, lateEnd, null, '[)');
+  }
+  return false;
+};
+
+
+// function isCheckinLate(checkinTime) {
+//   // Assuming threshold time is between 10:41:00 AM and 12:00:00 PM
+//   const startTime = moment("10:40:59 AM", "hh:mm:ss A");
+//   const endTime = moment("7:59:00 PM", "hh:mm:ss A");
+//   const checkin = moment(checkinTime, "hh:mm:ss A");
+//   // console.log(checkin)
+//   return checkin.isBetween(startTime, endTime);
+// }
 
 // Example usage:
 const lateCheckin = "08:40:00 PM"; // Assuming the check-in time
-console.log("LATE", isCheckinLate(lateCheckin)); // Should return true or false based on the check-in time
+// console.log("LATE", isCheckinLate(lateCheckin)); // Should return true or false based on the check-in time
