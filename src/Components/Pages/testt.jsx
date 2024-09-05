@@ -1642,3 +1642,149 @@ function isCheckinLate(checkinTime) {
 // Example usage:
 const lateCheckin = "08:40:00 PM"; // Assuming the check-in time
 console.log("LATE", isCheckinLate(lateCheckin)); // Should return true or false based on the check-in time
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// my function attendenc
+
+
+
+
+async function getTodayAttendance() {
+  const currentDate = new Date().toISOString()
+  try {
+    console.log( `${import.meta.env.VITE_BACKEND_API}/todays-attendence?user_id=${user_id}&currentDate=${currentDate}`)
+    console.log(user_id, currentDate)
+    const res = await axios.get(
+      `${import.meta.env.VITE_BACKEND_API}/todays-attendence?user_id=${user_id}&currentDate=${currentDate}`
+    );
+    // console.log("todaysAttendance, setTodaysAttendence" = useState(),res?.data)
+    setTodaysAttendence(res?.data)
+
+    filterTodaysData()
+
+    // setAttendanceData(res.data?.attendance);
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+const filterTodaysData = async()=> {
+
+
+const convertToIST = (utcDate) => {
+  const date = new Date(utcDate);
+  // Convert to IST (UTC+5:30)
+  date.setHours(date.getHours() );
+  date.setMinutes(date.getMinutes() );
+  return date;
+};
+
+const formatTime = (date) => {
+  return new Intl.DateTimeFormat('en-IN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true
+  }).format(date);
+};
+
+if(todaysAttendance){
+  const workingStatus = todaysAttendance?.workStatus
+  const status = todaysAttendance?.status
+    setAttendanceInfo(prev => ({...prev, workStatus:workingStatus}))
+    setAttendanceInfo(prev => ({...prev, status:status}))
+       const punchesList = todaysAttendance?.punches
+         if(punchesList?.length>0){
+          const showPunchIn = punchesList[0]?.punchIn
+            const punchInData = convertToIST(showPunchIn)
+            const formattedPunchIn = formatTime(punchInData)
+            // setfirstPunchIn(formattedPunchIn)
+            setAttendanceInfo(prev => ({ ...prev, firstPunchIn: formattedPunchIn }));
+
+            if(punchesList[punchesList.length - 1]?.punchOut){
+             
+             let showPunchOut = convertToIST(punchesList[punchesList.length - 1]?.punchOut)
+              const formatedPunchOut = formatTime(showPunchOut)
+            console.log("punch out",formatedPunchOut)
+
+              setAttendanceInfo(prev => ({ ...prev, LastpunchOut: formatedPunchOut }));
+              // setIsPunchInDone(true)
+            }else{
+              setshowFinalPunchOut('')
+            }
+           
+      }
+  
+  
+      const totalWorkingTimeMinutes = todaysAttendance?.totalWorkingTime; // Example value in minutes
+  const hours = Math.floor(totalWorkingTimeMinutes / 60); // Calculate hours
+  const minutes = Math.round(totalWorkingTimeMinutes % 60);
+  const formatedWorkingTime = `${hours <1 ? "00" : ( hours < 10 ? "0"+hours: hours)}h   ${minutes}m`
+  setAttendanceInfo(prev => ({...prev , totalWorkingTime:formatedWorkingTime}))
+
+}
+else{
+  console.log("no data available")
+}
+}
+
+
+
+// concern modal 
+
+
+<Modal
+title="Drop a message"
+centered
+open={isModalOpen}
+onOk={handleOk}
+onCancel={handleCancel}
+>
+
+
+{/* <div className="container">
+  <div className="row">
+    <div className="col">
+      <div className="col">
+        <span>Date of Issue Occurred</span>
+        <input
+          type="date"
+          value={punchDate}
+          onChange={(e) => setPunchDate(e.target.value)}
+        />
+
+        <h6>Punch Status</h6>
+        <select
+          value={punchStatus}
+          onChange={(e) => setPunchStatus(e.target.value)}
+          style={{ width: "160px", height: "30px" }}
+        >
+          <option value="Punch In">Punch In</option>
+          <option value="Punch Out">Punch Out</option>
+        </select>
+      </div>
+    </div>
+    <div className="col">
+      <h6>write concern</h6>
+
+      <textarea onChange={(e) => setPunchMessage(e.target.value)} />
+    </div>
+  </div>
+</div> */}
+</Modal>
