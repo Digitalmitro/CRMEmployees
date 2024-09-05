@@ -1285,35 +1285,27 @@ function getCurrentDateFormatted() {
 }
 
 const checkinTime = (currentTime) => {
-  const punchInDate = new Date(currentTime);
-  const punchInTime = punchInDate.getHours() * 60 + punchInDate.getMinutes(); // convert punch-in time to minutes
+  const punchInDate = moment(currentTime); // current punch-in time using moment
 
   if (NewProfile?.type === 'Day') {
-    const lateStart = new Date(punchInDate);
-    lateStart.setHours(10, 40, 0); // set to 10:40 AM
-
-    const lateEnd = new Date(punchInDate);
-    lateEnd.setHours(7, 40, 0); // set to 12:30 PM
-
-    const lateStartTime = lateStart.getHours() * 60 + lateStart.getMinutes();
-    const lateEndTime = lateEnd.getHours() * 60 + lateEnd.getMinutes();
-
-    // return punchInTime >= lateStartTime && punchInTime < lateEndTime;
-    return punchInTime >= lateStartTime;
+    const lateStart = moment(punchInDate).hours(10).minutes(40).seconds(0); // set to 10:40 AM same day
+    return punchInDate.isSameOrAfter(lateStart);
   } else if (NewProfile?.type === 'Night') {
-    const lateStart = new Date(punchInDate);
-    lateStart.setHours(20, 10, 0); // set to 8:10 PM
+    // Night shift starts at 8:40 PM, but can roll over into the next day
+    const lateStart = moment(punchInDate).hours(20).minutes(40).seconds(0); // set to 8:40 PM same day
+    const lateEnd = moment(punchInDate).add(1, 'day').hours(8).minutes(40).seconds(0); // set late end time to 8:40 AM next day
 
-    const lateEnd = new Date(punchInDate);
-    lateEnd.setHours(22, 10, 0); // set to 9:10 PM
+    console.log("PUNCH IN TIME -->", punchInDate.format());
+    console.log("LATE START -->", lateStart.format());
+    console.log("LATE END -->", lateEnd.format());
 
-    const lateStartTime = lateStart.getHours() * 60 + lateStart.getMinutes();
-    const lateEndTime = lateEnd.getHours() * 60 + lateEnd.getMinutes();
-
-    return punchInTime >= lateStartTime && punchInTime < lateEndTime;
+    // Check if punchInDate falls between lateStart and lateEnd (spanning two days)
+    return punchInDate.isSameOrAfter(lateStart) || punchInDate.isBefore(lateEnd);
   }
+
   return false;
 };
+
 
 
 
