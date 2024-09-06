@@ -12,6 +12,8 @@ import "react-toastify/dist/ReactToastify.css";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import Push from 'push.js'
+import DM from '../../assets/logo.png'
 import {
   Modal,
   Button,
@@ -120,7 +122,7 @@ const EmployeeAttendance = () => {
   };
   const handleOk = async () => {
     setIsModalOpen(false);
-    postConcernData();
+    // postConcernData();
   };
   const handledOk = async () => {
     setIsAttendance(false);
@@ -258,49 +260,55 @@ useEffect(()=> {
     }
   };
 
-  const postConcernData = async () => {
-    const payload = {
-      name,
-      email,
-      message: Punchmessage,
-      date: punchDate,
-      punchType: punchStatus,
-      status: "Pending",
-      user_id,
-    };
-    try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_BACKEND_API}/concern`,
-        payload,
-        {
-          headers: {
-            token: userToken,
-          },
-        }
-      );
-      toast.info(res.data, {});
-      getConcernData();
-    } catch (error) {
-      console.log(err);
-    }
-  };
+  // const postConcernData = async () => {
+  //   const payload = {
+  //     name,
+  //     email,
+  //     message: Punchmessage,
+  //     date: punchDate,
+  //     punchType: punchStatus,
+  //     status: "Pending",
+  //     user_id,
+  //   };
+  //   try {
+  //     const res = await axios.post(
+  //       `${import.meta.env.VITE_BACKEND_API}/concern`,
+  //       payload,
+  //       {
+  //         headers: {
+  //           token: userToken,
+  //         },
+  //       }
+  //     );
+  //     toast.info(res.data, {});
+  //     getConcernData();
+  //   } catch (error) {
+  //     console.log(err);
+  //   }
+  // };
 
 
   const onFinish1 = async (values) => {
     const { ConcernDate, ActualPunchIn, ActualPunchOut, ConcernMessage } = values;
+     console.log("form123", ConcernDate  )
 
+     const formattedActualPunchIn = moment(ActualPunchIn.$d).format(' h:mm:ss a');
+     const formattedActualPunchOut = moment(ActualPunchOut.$d).format(' h:mm:ss a');
+   
+     console.log("form1", formattedActualPunchIn, formattedActualPunchOut);
     const payload = {
       name, 
       email, 
       message: ConcernMessage,
-      date: ConcernDate.format('YYYY-MM-DD'),
-      punchInTime: ActualPunchIn.format('HH:mm'),
-      punchOutTime: ActualPunchOut.format('HH:mm'),
+      shiftType:NewProfile?.type,
+      ActualPunchIn: formattedActualPunchIn,
+      ActualPunchOut: formattedActualPunchOut,
       currenDate: moment().format('MMMM Do YYYY, h:mm:ss a'),
       status: 'Pending',
+      ConcernDate: moment(ConcernDate.$d).format('MMMM Do YYYY'),
       user_id,
     };
-
+console.log("payload", payload)
     try {
       const res = await axios.post(
         `${import.meta.env.VITE_BACKEND_API}/concern`,
@@ -311,9 +319,26 @@ useEffect(()=> {
           },
         }
       );
-      message.info(res.data.message); // Assuming your API response has a message field
+      Push.create(`Hey ${name}`, {
+        body: `You have successfully Raised Concern`,
+        icon: `${DM}`,
+    })
+      message.info(res.data.message); 
+      const noti = {
+        message: `${NewProfile?.name} Raised a Concern`,
+        Status:false,
+        currentDate: moment().format("MMMM Do YYYY, h:mm:ss a"),
+        Date: moment().format("MMMM Do YYYY, h:mm:ss a"),
+    }
+    try{
+      await axios.post(`${import.meta.env.VITE_BACKEND_API}/notification`, noti)// Assuming your API response has a message field
+
+    }catch(err){
+      console.log(err)
+    }
       getConcernData();
-      handleOk(); // Close the modal on successful submission
+      setCallApi(!callApi)
+      handleOk(); 
     } catch (error) {
       console.error(error);
       message.error('An error occurred while submitting the form');
@@ -834,6 +859,7 @@ useEffect(()=> {
       title="Drop a message"
       centered
       open={isModalOpen}
+      onCancel={handleCancel}
       footer={null}
     >
       <Form
@@ -876,7 +902,7 @@ useEffect(()=> {
             >
               <TimePicker
                 placeholder="Select Actual In Time"
-                initialValue={moment('10:30', 'HH:mm')}
+                initialValue={moment('10:30:00', 'HH:mm:ss')}
                 format="HH:mm"
               />
             </Form.Item>

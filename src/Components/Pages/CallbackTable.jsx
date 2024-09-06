@@ -57,8 +57,8 @@ const CallbackTable = () => {
     const [searchResults, setSearchResults] = useState([])
     const [selectedMonth, setSelectedMonth] = useState('')
     const [date, setDate] = useState('')
-console.log("userToken", userToken)
-console.log("NewProfile", NewProfile)
+    console.log("userToken", userToken)
+    console.log("NewProfile", NewProfile)
     // Function to handle the change in the select input
     const handleMonthChange = (event) => {
         setSelectedMonth(event.target.value)
