@@ -1,313 +1,408 @@
- 
-const [modalOpened, setModalOpened] = useState(false);
 
 
-const [docss, setdocss] = useState([]);
-
-const [docsDatas, setDocsDatas] = useState("");
-const [uploadedDocs, setUploadedDocs] = useState();
 
 
-const showModals = () => {
-  setModalOpened(true);
-};
-const handleOk = () => {
-  setModalOpened(false);
-};
-const handleCancel = () => {
-  setModalOpened(false);
-};
 
 
-const handleSubmit = async () => {
-  const formData = new FormData();
-  docsDatas.trim() !== "" && formData.append("docsName", docsDatas);
-  if (docss) {
-    formData.append("docs", docss);
-  }
-  console.log("docs", docsDatas, docss);
-  try {
-    const response = await axios.post(
-      `${import.meta.env.VITE_BACKEND_API}/docs`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
+
+
+import { useEffect, useState } from "react";
+import { FaListUl } from "react-icons/fa";
+import { FaFilter } from "react-icons/fa";
+import { BsThreeDots } from "react-icons/bs";
+// import '../style/EmpAttendanceList.css'
+import { DatePicker, Space } from "antd";
+import axios from "axios";
+import { motion } from "framer-motion";
+import moment from "moment";
+// import "../style/Project.css"
+const EmpAttendanceList = () => {
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [date, setDate] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [attendanceData, setAttendanceData] = useState([]);
+  const [attendanceList, setAttendanceList] = useState([]);
+  const [CompleteEndLate, setCompleteEndLate] = useState(0);
+  const [completeEndHalfDay, setcompleteEndHalfDay] = useState(0);
+  const [attendanceInfo, setAttendanceInfo] = useState({
+    firstPunchIn: null,
+    LastpunchOut: null,
+    totalWorkingTime: null,
+    workStatus: null,
+    status: null,
+  });
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  // Function to handle the change in the select input
+  const handleMonthChange = (event) => {
+    setSelectedMonth(event.target.value);
+  };
+
+  const Profile = localStorage.getItem("user");
+  const NewProfile = JSON.parse(Profile);
+  const user_id = NewProfile?._id;
+
+  console.log("userid", user_id);
+  async function getData() {
+    const res = await axios.get(
+      `${import.meta.env.VITE_BACKEND_API}/attendance/${user_id}`
     );
-    console.log("response", response); // Log the response from the server
-    message.success("docs uploaded successfully");
-  } catch (err) {
-    console.log(err);
+    setAttendanceData(res.data?.attendance);
   }
-};
 
-const getDocsData = async () => {
-  try {
-    const res = await axios.get(`${import.meta.env.VITE_BACKEND_API}/docs`);
-    console.log("res", res.data);
-    setUploadedDocs(res.data)
-  } catch (err) {
-    console.log(err);
+  async function getEmpAttendanceData() {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_BACKEND_API}/attendancelist/${user_id}`
+      );
+      setAttendanceList(res?.data?.data?.reverse());
+    } catch (err) {
+      console.log(err);
+    }
   }
-};
 
+  const result = {
+    totalHalfDays: 0,
+    totalAbsent: 0,
+    totalFullDays: 0,
+    totalLate: 0,
+    totalWeekdayHalfDays: 0,
+    totalWeekdayFullDays: 0,
+    totalWeekends: 0,
+  };
 
+  const formatTime = (date) => {
+    const dateIst = new Date(date);
+    // Convert to IST (UTC+5:30)
+    dateIst.setHours(dateIst.getHours());
+    dateIst.setMinutes(dateIst.getMinutes());
+    return new Intl.DateTimeFormat("en-IN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+    }).format(dateIst);
+  };
+  const formatTotalWorkingTime = (time) => {
+    const totalWorkingTimeMinutes = time; // Example value in minutes
+    const hours = Math.floor(totalWorkingTimeMinutes / 60); // Calculate hours
+    const minutes = Math.round(totalWorkingTimeMinutes % 60);
+    const formatedWorkingTime = `${
+      hours < 1 ? "00" : hours < 10 ? "0" + hours : hours
+    }h   ${minutes}m`;
+    return `${
+      hours < 1 ? "00" : hours < 10 ? "0" + hours : hours
+    }h   ${minutes}m`;
+  };
 
+  useEffect(() => {
+    getEmpAttendanceData();
+  }, []);
 
+  // calculate full calendar of a month ...
 
+  const generateDatesInMonth = (year, month) => {
+    const dates = [];
+    const numDays = new Date(year, month, 0).getDate();
 
-<Modal
-      title=""
-      open={modalOpened}
-      onOk={handleOk}
-      onCancel={handleCancel}
-    >
-      <div className="added-task">
-        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-          <li class="nav-item" role="presentation">
-            <button
-              class="nav-link active"
-              id="pills-home-tab"
-              data-bs-toggle="pill"
-              data-bs-target="#pills-home"
-              type="button"
-              role="tab"
-              aria-controls="pills-home"
-              aria-selected="true"
-            >
-              Task
-            </button>
-          </li>
-          <li class="nav-item" role="presentation">
-            <button
-              class="nav-link"
-              id="pills-profile-tab"
-              data-bs-toggle="pill"
-              data-bs-target="#pills-profile"
-              type="button"
-              role="tab"
-              aria-controls="pills-profile"
-              aria-selected="false"
-            >
-              Doc
-            </button>
-          </li>
-        </ul>
+    for (let day = 1; day <= numDays; day++) {
+      const date = new Date(year, month - 1, day);
+      dates.push(date.toISOString().split("T")[0]); // Format YYYY-MM-DD
+    }
 
-        <div className="tab-content " id="pills-tabContent">
-          <div
-            className="tab-pane fade show active task-name"
-            id="pills-home"
-            role="tabpanel"
-            aria-labelledby="pills-home-tab"
-            tabindex="0"
-          >
-            <div className="d-flex gap-3">
-              <select
-                className="form-select tasks"
-                style={{ width: "170px", fontSize: "0.9rem" }}
-                aria-label="Default select example"
-              >
-                <option selected> Mitro-Hsp</option>
-                <option value="1">One</option>
-                <option value="2">Two</option>
-                <option value="3">Three</option>
-              </select>
-              <select
-                className="form-select tasks"
-                style={{ width: "140px", fontSize: "0.9rem" }}
-                aria-label="Default select example"
-              >
-                <option selected> Task</option>
-                <option value="1">One</option>
-                <option value="2">Two</option>
-                <option value="3">Three</option>
-              </select>
-            </div>
-            <input
-              type="text"
-              placeholder="Task name ot type  '/' for commands"
-            />
+    return dates;
+  };
 
-            <p
+  const getMissingDates = (datesInMonth, attendanceDates) => {
+    const attendanceDateSet = new Set(attendanceDates);
+    return datesInMonth.filter((date) => !attendanceDateSet.has(date));
+  };
+
+  const getDayOfWeek = (dateStr) => new Date(dateStr).getDay();
+  const isWeekend = (dateStr) => [0, 6].includes(getDayOfWeek(dateStr)); // 0 for Sunday, 6 for Saturday
+
+  const categorizeMissingDates = (missingDates) => {
+    const result = {
+      totalWeekdayAbsent: 0,
+      totalWeekends: 0,
+    };
+
+    missingDates.forEach((date) => {
+      if (isWeekend(date)) {
+        result.totalWeekends += 1;
+      } else {
+        result.totalWeekdayAbsent += 1;
+      }
+    });
+
+    return result;
+  };
+
+  useEffect(() => {
+    const getEmpAttendanceData = async () => {
+      // ... (Existing code to fetch and process attendanceList)
+
+      // Generate dates for the current month
+      const year = new Date().getFullYear();
+      const month = new Date().getMonth() + 1; // JavaScript months are 0-based
+      const datesInMonth = generateDatesInMonth(year, month);
+
+      // Get all attendance dates
+      const attendanceDates = attendanceList.map((entry) => entry.currentDate);
+
+      // Get missing dates
+      const missingDates = getMissingDates(datesInMonth, attendanceDates);
+
+      // Categorize missing dates
+      const categorizedMissingDates = categorizeMissingDates(missingDates);
+
+      // Update state or perform any actions needed
+      console.log("Categorized Missing Dates:", categorizedMissingDates);
+    };
+
+    getEmpAttendanceData();
+  }, []);
+
+  useEffect(() => {
+    const calculateTotals = () => {
+      let totalLate = 0;
+      let totalHalfDay = 0;
+
+      // Iterate over the attendance list and count the statuses
+      attendanceList.forEach((entry) => {
+        if (entry.status === "Late") {
+          totalLate += 1;
+        } else if (entry.workStatus === "Half Day") {
+          totalHalfDay += 1;
+        }
+      });
+      setCompleteEndLate(totalLate);
+      setcompleteEndHalfDay(totalHalfDay);
+      // Log or set the state with the totals
+      console.log("Total Late:", totalLate);
+      console.log("Total Half Day:", totalHalfDay);
+    };
+
+    // Call the function to calculate totals
+    calculateTotals();
+  }, [attendanceList]);
+
+  return (
+    <>
+      <div className="employee-project-container container">
+        {/* <h6 className="py-4" >Attendance List</h6> */}
+        <div className="emp-select-months-year">
+          <div className="emp-select-month">
+            <select
               style={{
-                fontSize: "0.9rem",
-                marginTop: "1.5rem",
+                width: "124px",
+                height: "30px",
+                paddingRight: "12px",
                 color: "#222",
-                letterSpacing: "0.6px",
               }}
+              onChange={handleMonthChange}
             >
-              {" "}
-              <span>
-                <svg
-                  height="16px"
-                  width="16px"
-                  fill="#000000"
-                  viewBox="0 0 32 32"
-                  data-name="Layer 1"
-                  id="Layer_1"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                  <g
-                    id="SVGRepo_tracerCarrier"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  ></g>
-                  <g id="SVGRepo_iconCarrier">
-                    <rect height="1" width="7" x="13" y="2"></rect>
-                    <rect height="1" width="10" x="10" y="27"></rect>
-                    <rect
-                      height="1"
-                      transform="translate(-10 23) rotate(-90)"
-                      width="15"
-                      x="-1"
-                      y="16"
-                    ></rect>
-                    <rect
-                      height="1"
-                      transform="translate(8.5 38.5) rotate(-90)"
-                      width="18"
-                      x="14.5"
-                      y="14.5"
-                    ></rect>
-                    <rect height="1" width="7" x="6" y="8"></rect>
-                    <rect
-                      height="1"
-                      transform="translate(-1.05 8.18) rotate(-45)"
-                      width="8.49"
-                      x="5.11"
-                      y="4.85"
-                    ></rect>
-                    <rect
-                      height="1"
-                      transform="translate(7 18) rotate(-90)"
-                      width="7"
-                      x="9"
-                      y="5"
-                    ></rect>
-                    <rect height="1" width="10" x="12" y="29"></rect>
-                    <rect
-                      height="1"
-                      transform="translate(8.5 42.5) rotate(-90)"
-                      width="18"
-                      x="16.5"
-                      y="16.5"
-                    ></rect>
-                    <path d="M22,30V29h2a1,1,0,0,0,1-1V26h1v2a2,2,0,0,1-2,2Z"></path>
-                    <path d="M20,28V27h2a1,1,0,0,0,1-1V24h1v2a2,2,0,0,1-2,2Z"></path>
-                    <path d="M10,28V27H8a1,1,0,0,1-1-1V24H6v2a2,2,0,0,0,2,2Z"></path>
-                    <path d="M20,2V3h2a1,1,0,0,1,1,1V6h1V4a2,2,0,0,0-2-2Z"></path>
-                    <path d="M23,4V5h1a1,1,0,0,1,1,1V8h1V6a2,2,0,0,0-2-2Z"></path>
-                    <path d="M12,30V29H10a1,1,0,0,1-1-1V27H8v1a2,2,0,0,0,2,2Z"></path>
-                  </g>
-                </svg>
-              </span>{" "}
-              Add Description
-            </p>
-
-            <input
-              type="text"
-              placeholder="...."
-              style={{ marginTop: "3px" }}
-            />
-            <Form layout="vertical">
-              <Row gutter={16}>
-                <Col span={11}>
-                  <Form.Item>
-                    <Input
-                      name="DeadLine"
-                      type="date"
-                      value={newSubList.DeadLine}
-                      onChange={handleChange}
-                      placeholder="DeadLine"
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={11}>
-                  <Form.Item>
-                    <Select
-                      style={{ marginTop: "14px" }}
-                      placeholder="priority"
-                      //   value={newSubList.AsigneeName}
-                      onChange={handleSelectPriority}
-                      virtual={false}
-                      dropdownStyle={{
-                        overflowY: "auto",
-                        scrollBehavior: "smooth",
-                      }}
-                    >
-                      <Option value="Urgent" style={{ color: "red" }}>
-                        Urgent
-                      </Option>
-                      <Option value="High" style={{ color: "blue" }}>
-                        High
-                      </Option>
-                      <Option value="normal" style={{ color: "#FFD700" }}>
-                        normal
-                      </Option>
-                      <Option value="low" style={{ color: "green" }}>
-                        low
-                      </Option>
-                    </Select>
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Form>
+              <option value="">Select Month</option>
+              <option value="Jan">Jan</option>
+              <option value="Feb">Feb</option>
+              <option value="Mar">Mar</option>
+              <option value="Apr">Apr</option>
+              <option value="May">May</option>
+              <option value="Jun">Jun</option>
+              <option value="Jul">July</option>
+              <option value="Aug">Aug</option>
+              <option value="Sep">Sep</option>
+              <option value="Oct">Oct</option>
+              <option value="Nov">Nov</option>
+              <option value="Dec">Dec</option>
+            </select>
           </div>
           <div
-            className="tab-pane fade task-name"
-            id="pills-profile"
+            className="emp-select-month"
+            style={{ width: "123px", paddingRight: "0.2rem", height: "34px" }}
+          >
+            {/* <Space direction="vertical" style={{ border: "none", outline: "none" }}>
+                            <DatePicker onChange={(e) => setDate(e.target.value)} />
+
+                        </Space> */}
+            <input
+              onChange={(e) => setDate(e.target.value)}
+              style={{ width: "118px", height: "30px", color: "#222" }}
+              type="date"
+            />
+
+            {/* for search */}
+            {/* <input
+                            value={searchTerm}
+                            onChange={handleSearchChange}
+                            placeholder="search"
+                            className="search shadow"
+                            style={{ height: '45px', marginLeft: '10px', border: 'none' }}
+                        /> */}
+          </div>
+        </div>
+        <hr />
+
+        <div class="tab-content" id="pills-tabContent">
+          <div
+            class="tab-pane fade show active table-responsive"
+            id="pills-activeproject-home"
             role="tabpanel"
-            aria-labelledby="pills-profile-tab"
+            aria-labelledby="pills-activeproject-home"
             tabindex="0"
           >
-            <input
-              type="text"
-              value={docsDatas}
-              onChange={(e) => setDocsDatas(e.target.value)}
-              placeholder="Name this Doc..."
-            />
-            <input
-              type="file"
-              onChange={(e) => setdocss(e.target.files[0])}
-              placeholder=""
-            />
-            <button
-              style={{
-                backgroundColor: "coral",
-                color: "white",
-                padding: "3px 8px",
-                border: "none",
-                borderRadius: "3px",
-                marginRight: "10px",
-                // right:"1",
-              }}
-              onClick={() => handleSubmit()}
-            >
-              Submit Docs
-            </button>
-          </div>
-
-          <div>
-            <br />
-            <h6>All Uploaded Docs </h6>
-            {uploadedDocs?.map((item) => (
-              <div key={item._id}>
-                {console.log("item.docs", item.docs)}
-                <a
-                  href={`${import.meta.env.VITE_BACKEND_API}/${item.docs}`}  >  {item.docsName}
-                  </a>
-
-                  {/* <iframe src={`${import.meta.env.VITE_BACKEND_API}/${item.docs}`} width="100%" height="auto">
-                  <p>Your browser does not support iframes.</p>
-                   </iframe> */}
+            <div className="project-title my-2">
+              <div className="allproject">
+                <h6>All Details</h6>
               </div>
-            ))}
+              <div className="list-of-days">
+                <div className="emp-holidays-btn">
+                  <button
+                    style={{
+                      height: "25px",
+                      width: "300px",
+                      borderRadius: "10px",
+                      background: "#f3f3fb",
+                      color: "#72757a",
+                      fontSize: "0.8rem",
+                      border: "1px solid #dcd2d2",
+                    }}
+                  >
+                    Late :{/* {totalLate && totalLate} */}
+                  </button>
+                  <button
+                    style={{
+                      height: "25px",
+                      width: "300px",
+                      borderRadius: "10px",
+                      background: "#f3f3fb",
+                      color: "#72757a",
+                      fontSize: "0.8rem",
+                      border: "1px solid #dcd2d2",
+                    }}
+                  >
+                    Absent :{/* {totalAbs} */}
+                  </button>
+                  <button
+                    style={{
+                      height: "25px",
+                      width: "330px",
+                      borderRadius: "10px",
+                      background: "#f3f3fb",
+                      color: "#72757a",
+                      fontSize: "0.8rem",
+                      border: "1px solid #dcd2d2",
+                    }}
+                  >
+                    Half Day :{/* {halfDayCount} */}
+                  </button>
+                </div>
+                <div className="sort">
+                  {/* <button><FaFilter style={{ color: "FF560E", fontSize: "0.8rem" }} /> </button> */}
+                  <input
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    placeholder="search"
+                    style={{
+                      height: "20px",
+                      height: "5vh",
+                      marginLeft: "10px",
+                      paddingLeft: "5px",
+                      borderRadius: "6px",
+                      outline: "none",
+                      width: "70%",
+                      boxShadow: " 1px 1px 2px 1px gray",
+                      border: "none",
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th scope="col">Date</th>
+                  <th scope="col">Punch In</th>
+                  <th scope="col">Punch out</th>
+                  <th scope="col">Production</th>
 
+                  <th scope="col">
+                    <span style={{ marginRight: "2px" }}>
+                      <svg
+                        width="10"
+                        height="10"
+                        viewBox="0 0 14 14"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M12.3538 1.64712C11.9282 1.22241 11.3515 0.983887 10.7503 0.983887C10.1491 0.983887 9.57237 1.22241 9.1468 1.64712L4.8968 5.89712C4.84189 5.95186 4.80047 6.01862 4.7758 6.09212L3.5258 9.84212C3.49635 9.9302 3.49201 10.0247 3.51327 10.1151C3.53453 10.2055 3.58054 10.2882 3.64616 10.354C3.71177 10.4197 3.7944 10.4658 3.88476 10.4872C3.97513 10.5086 4.06968 10.5044 4.1578 10.4751L7.9078 9.22512C7.98166 9.20059 8.04877 9.15916 8.1038 9.10412L12.3538 4.85412C12.7785 4.42855 13.017 3.85187 13.017 3.25062C13.017 2.64938 12.7785 2.0727 12.3538 1.64712ZM10.9868 7.63512C10.9955 7.75512 10.9998 7.87679 10.9998 8.00012C10.9997 9.00458 10.6971 9.98573 10.1314 10.8157C9.56573 11.6457 8.76316 12.2861 7.82828 12.6535C6.8934 13.0208 5.86956 13.098 4.89016 12.8751C3.91075 12.6522 3.02119 12.1394 2.33737 11.4037C1.65356 10.668 1.20719 9.7433 1.05643 8.75023C0.905677 7.75715 1.05752 6.74169 1.49217 5.83615C1.92682 4.93061 2.62414 4.17697 3.49326 3.67343C4.36239 3.1699 5.36302 2.9398 6.3648 3.01312L7.2488 2.13012C5.98313 1.86102 4.66439 2.00829 3.48926 2.54997C2.31414 3.09164 1.34562 3.9987 0.728165 5.13583C0.110709 6.27296 -0.122591 7.57924 0.0630632 8.85981C0.248718 10.1404 0.843378 11.3266 1.75834 12.2416C2.67331 13.1565 3.85955 13.7512 5.14012 13.9369C6.42068 14.1225 7.72696 13.8892 8.86409 13.2718C10.0012 12.6543 10.9083 11.6858 11.45 10.5107C11.9916 9.33554 12.1389 8.01679 11.8698 6.75112L10.9868 7.63512Z"
+                          fill="#959595"
+                        />
+                      </svg>
+                    </span>
+                    Status
+                  </th>
+                  <th scope="col">IP Address</th>
+                  <th scope="col">Work Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {attendanceList?.map((res, index) => {
+                  const firstPunchIn =
+                    res.punches[0]?.punchIn &&
+                    formatTime(res.punches[0].punchIn);
+
+                  const lastPunchout = res.punches[res.punches.length - 1]
+                    ?.punchOut
+                    ? res.punches[res?.punches.length - 1]?.punchOut
+                    : res.punches[res?.punches.length - 2]?.punchOut &&
+                      res.punches[res?.punches?.length - 2].punchOut;
+
+                  return (
+                    <tr key={res._id}>
+                      <td>{res.currentDate}</td>
+
+                      <td>{firstPunchIn}</td>
+                      <td>
+                        {" "}
+                        {lastPunchout
+                          ? formatTime(lastPunchout)
+                          : "Punch Out not Done"}
+                      </td>
+                      <td>
+                        {res?.totalWorkingTime
+                          ? formatTotalWorkingTime(res.totalWorkingTime)
+                          : "0"}
+                      </td>
+                      <td
+                        style={{
+                          color:
+                            res.status === "LATE"
+                              ? "goldenrod"
+                              : res.status === "Week Off"
+                              ? "blue"
+                              : res.status === "Absent"
+                              ? "red"
+                              : "green",
+                        }}
+                      >
+                        {res.status}
+                      </td>
+                      <td>{res.ip}</td>
+                      <td>{res.workStatus}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
-    </Modal>
+    </>
+  );
+};
+
+export default EmpAttendanceList;

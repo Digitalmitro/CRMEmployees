@@ -12,8 +12,8 @@ import "react-toastify/dist/ReactToastify.css";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import Push from 'push.js'
-import DM from '../../assets/logo.png'
+import Push from "push.js";
+import DM from "../../assets/logo.png";
 import {
   Modal,
   Button,
@@ -23,7 +23,8 @@ import {
   Col,
   DatePicker,
   message,
-  TimePicker,Space
+  TimePicker,
+  Space,
 } from "antd";
 
 const userToken = localStorage.getItem("userToken");
@@ -58,18 +59,16 @@ const EmployeeAttendance = () => {
   const [isPunchInDone, setIsPunchInDone] = useState(false);
   const [Punchmessage, setPunchMessage] = useState("");
   const [showFinalPunchOut, setshowFinalPunchOut] = useState("");
-  const [todaysAttendance, setTodaysAttendence] = useState()
+  const [todaysAttendance, setTodaysAttendence] = useState();
   const [attendanceInfo, setAttendanceInfo] = useState({
-    firstPunchIn:null,
-    LastpunchOut:null,
-    totalWorkingTime:null,
-    workStatus:null,
-    status:null,
-  })
-  
+    firstPunchIn: null,
+    LastpunchOut: null,
+    totalWorkingTime: null,
+    workStatus: null,
+    status: null,
+  });
 
   const [punchDate, setPunchDate] = useState("");
- 
 
   const showLeaveModal = () => {
     setIsModalVisible(true);
@@ -79,8 +78,9 @@ const EmployeeAttendance = () => {
   };
 
   const disabledDate = (current) => {
+    console.log("current", current);
     // Can not select today and future dates
-    return current && current > moment().endOf('day');
+    return current && current >= moment().startOf("day");
   };
 
   const handleLeaveSubmit = async (values) => {
@@ -154,77 +154,99 @@ const EmployeeAttendance = () => {
         `${import.meta.env.VITE_BACKEND_API}/attendance/${user_id}`
       );
       setAttendanceData(res.data?.attendance);
-      console.log("attendence",res.data?.attendance)
     } catch (err) {
       console.log(err);
     }
   }
 
-  async function getTodayAttendance() {
-    const currentDate = new Date().toISOString()
-    try {
-      console.log( `${import.meta.env.VITE_BACKEND_API}/todays-attendence?user_id=${user_id}&currentDate=${currentDate}`)
-      console.log(user_id, currentDate)
-      const res = await axios.get(
-        `${import.meta.env.VITE_BACKEND_API}/todays-attendence?user_id=${user_id}&currentDate=${currentDate}`
-      );
-      setTodaysAttendence(res?.data)
 
-      
+  async function getEmpAttendanceData() {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_BACKEND_API}/attendancelist/${user_id}`
+      );
+      // setAttendanceData(res.data?.attendance);
+      console.log("attendencelist", res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+  useEffect(()=> {
+    getEmpAttendanceData()
+  },[])
+
+  async function getTodayAttendance() {
+    const currentDate = new Date().toISOString();
+    try {
+     
+      const res = await axios.get(
+        `${
+          import.meta.env.VITE_BACKEND_API
+        }/todays-attendence?user_id=${user_id}&currentDate=${currentDate}`
+      );
+      setTodaysAttendence(res?.data);
+
       const convertToIST = (utcDate) => {
         const date = new Date(utcDate);
         // Convert to IST (UTC+5:30)
-        date.setHours(date.getHours() );
-        date.setMinutes(date.getMinutes() );
+        date.setHours(date.getHours());
+        date.setMinutes(date.getMinutes());
         return date;
       };
 
       const formatTime = (date) => {
-        return new Intl.DateTimeFormat('en-IN', {
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          hour12: true
+        return new Intl.DateTimeFormat("en-IN", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
         }).format(date);
       };
 
-      if(res?.data){
-        const workingStatus = res?.data?.workStatus
-        const status = res?.data?.status
-          setAttendanceInfo(prev => ({...prev, workStatus:workingStatus}))
-          setAttendanceInfo(prev => ({...prev, status:status}))
-             const punchesList = res.data?.punches
-               if(punchesList?.length>0){
-                const showPunchIn = punchesList[0]?.punchIn
-                  const punchInData = convertToIST(showPunchIn)
-                  const formattedPunchIn = formatTime(punchInData)
-                  // setfirstPunchIn(formattedPunchIn)
-                  setAttendanceInfo(prev => ({ ...prev, firstPunchIn: formattedPunchIn }));
+      if (res?.data) {
+        const workingStatus = res?.data?.workStatus;
+        const status = res?.data?.status;
+        setAttendanceInfo((prev) => ({ ...prev, workStatus: workingStatus }));
+        setAttendanceInfo((prev) => ({ ...prev, status: status }));
+        const punchesList = res.data?.punches;
+        if (punchesList?.length > 0) {
+          const showPunchIn = punchesList[0]?.punchIn;
+          const punchInData = convertToIST(showPunchIn);
+          const formattedPunchIn = formatTime(punchInData);
+          // setfirstPunchIn(formattedPunchIn)
+          setAttendanceInfo((prev) => ({
+            ...prev,
+            firstPunchIn: formattedPunchIn,
+          }));
 
-                  if(punchesList[punchesList.length - 1]?.punchOut){
-                   
-                   let showPunchOut = convertToIST(punchesList[punchesList.length - 1]?.punchOut)
-                    const formatedPunchOut = formatTime(showPunchOut)
-                  console.log("punch out",formatedPunchOut)
+          if (punchesList[punchesList.length - 1]?.punchOut) {
+            let showPunchOut = convertToIST(
+              punchesList[punchesList.length - 1]?.punchOut
+            );
+            const formatedPunchOut = formatTime(showPunchOut);
 
-                    setAttendanceInfo(prev => ({ ...prev, LastpunchOut: formatedPunchOut }));
-                    // setIsPunchInDone(true)
-                  }else{
-                    setAttendanceInfo(prev => ({ ...prev, LastpunchOut: "" }));
-                  }
-                 
-            }
-        
-        
-            const totalWorkingTimeMinutes = res.data?.totalWorkingTime; // Example value in minutes
+            setAttendanceInfo((prev) => ({
+              ...prev,
+              LastpunchOut: formatedPunchOut,
+            }));
+            // setIsPunchInDone(true)
+          } else {
+            setAttendanceInfo((prev) => ({ ...prev, LastpunchOut: "" }));
+          }
+        }
+
+        const totalWorkingTimeMinutes = res.data?.totalWorkingTime; // Example value in minutes
         const hours = Math.floor(totalWorkingTimeMinutes / 60); // Calculate hours
         const minutes = Math.round(totalWorkingTimeMinutes % 60);
-        const formatedWorkingTime = `${hours <1 ? "00" : ( hours < 10 ? "0"+hours: hours)}h   ${minutes}m`
-        setAttendanceInfo(prev => ({...prev , totalWorkingTime:formatedWorkingTime}))
-
-      }
-      else{
-        console.log("no data available")
+        const formatedWorkingTime = `${
+          hours < 1 ? "00" : hours < 10 ? "0" + hours : hours
+        }h   ${minutes}m`;
+        setAttendanceInfo((prev) => ({
+          ...prev,
+          totalWorkingTime: formatedWorkingTime,
+        }));
+      } else {
+        console.log("no data available");
       }
 
       // setAttendanceData(res.data?.attendance);
@@ -233,11 +255,9 @@ const EmployeeAttendance = () => {
     }
   }
 
-
-
-useEffect(()=> {
-  getTodayAttendance()
-},[])
+  useEffect(() => {
+    getTodayAttendance();
+  }, []);
 
   const getIp = async () => {
     // Fetch user's IP address
@@ -287,28 +307,34 @@ useEffect(()=> {
   //   }
   // };
 
-
   const onFinish1 = async (values) => {
-    const { ConcernDate, ActualPunchIn, ActualPunchOut, ConcernMessage } = values;
-     console.log("form123", ConcernDate  )
+    const { ConcernDate, ActualPunchIn, ActualPunchOut, ConcernMessage } =
+      values;
 
-     const formattedActualPunchIn = moment(ActualPunchIn.$d).format(' h:mm:ss a');
-     const formattedActualPunchOut = moment(ActualPunchOut.$d).format(' h:mm:ss a');
-   
-     console.log("form1", formattedActualPunchIn, formattedActualPunchOut);
+    // if no punchin is selected
+    const defaultPunchIn = NewProfile?.type === "Day" ? "10:30 AM" : "08:00 PM";
+    const defaultPunchOut =
+      NewProfile?.type === "Day" ? "07:30 PM" : "05:00 AM";
+
+    const formattedActualPunchIn = ActualPunchIn
+      ? moment(ActualPunchIn.$d).format("h:mm:ss a")
+      : moment(defaultPunchIn, "hh:mm A").format("h:mm:ss a");
+    const formattedActualPunchOut = ActualPunchOut
+      ? moment(ActualPunchOut.$d).format("h:mm:ss a")
+      : moment(defaultPunchOut, "hh:mm A").format("h:mm:ss a");
+
     const payload = {
-      name, 
-      email, 
+      name,
+      email,
       message: ConcernMessage,
-      shiftType:NewProfile?.type,
+      shiftType: NewProfile?.type,
       ActualPunchIn: formattedActualPunchIn,
       ActualPunchOut: formattedActualPunchOut,
-      currenDate: moment().format('MMMM Do YYYY, h:mm:ss a'),
-      status: 'Pending',
-      ConcernDate: moment(ConcernDate.$d).format('MMMM Do YYYY'),
+      currenDate: moment().format("MMMM Do YYYY, h:mm:ss a"),
+      status: "Pending",
+      ConcernDate: moment(ConcernDate.$d).format("MMMM Do YYYY"),
       user_id,
     };
-console.log("payload", payload)
     try {
       const res = await axios.post(
         `${import.meta.env.VITE_BACKEND_API}/concern`,
@@ -322,108 +348,112 @@ console.log("payload", payload)
       Push.create(`Hey ${name}`, {
         body: `You have successfully Raised Concern`,
         icon: `${DM}`,
-    })
-      message.info(res.data.message); 
+      });
+      message.info(res.data.message);
       const noti = {
         message: `${NewProfile?.name} Raised a Concern`,
-        Status:false,
+        Status: false,
         currentDate: moment().format("MMMM Do YYYY, h:mm:ss a"),
         Date: moment().format("MMMM Do YYYY, h:mm:ss a"),
-    }
-    try{
-      await axios.post(`${import.meta.env.VITE_BACKEND_API}/notification`, noti)// Assuming your API response has a message field
-
-    }catch(err){
-      console.log(err)
-    }
+      };
+      form1.resetFields();
+      try {
+        await axios.post(
+          `${import.meta.env.VITE_BACKEND_API}/notification`,
+          noti
+        ); // Assuming your API response has a message field
+      } catch (err) {
+        console.log(err);
+      }
       getConcernData();
-      setCallApi(!callApi)
-      handleOk(); 
+      setCallApi(!callApi);
+      handleOk();
     } catch (error) {
       console.error(error);
-      message.error('An error occurred while submitting the form');
+      message.error("An error occurred while submitting the form");
     }
   };
 
   const handlePunchIn = async () => {
-    const istTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+    const istTime = new Date().toLocaleString("en-US", {
+      timeZone: "Asia/Kolkata",
+    });
     const istDate = new Date(istTime);
     const currentTime = istDate.toISOString();
-    
+
     setPunchin(currentTime);
-    
+
     let isLate;
     if (attendanceInfo.firstPunchIn === null) {
-      console.log("hellokajal")
       isLate = checkinTime(currentTime);
     }
-    console.log("isLate", isLate);
-    
+
     const currentDate = istDate.toISOString();
-    console.log("currentTime", currentTime, "currentDate", currentDate);
-    
+
     // Build the request payload
     const payload = {
       userName: name,
       userEmail: email,
       shiftType: NewProfile?.type,
-      punches: [{
-        punchIn: currentTime
-      }],
+      punches: [
+        {
+          punchIn: currentTime,
+        },
+      ],
       currentDate,
       ip: userIP,
       user_id,
     };
-  
+
     // Conditionally add the status field if isLate is defined
     if (isLate !== undefined) {
       payload.status = isLate ? "Late" : "On Time";
     }
-  
+
     try {
-      console.log("Payload:", payload);
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_API}/attendance`, payload);
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_API}/attendance`,
+        payload
+      );
       localStorage.setItem("isPunchInDone", JSON.stringify(true));
       setIsPunchInDone(true);
-      getTodayAttendance()
+      getTodayAttendance();
 
       setHidden(true);
       handleLoading();
     } catch (error) {
       console.error("Error sending checkin data:", error);
     }
-    
   };
-  
+
   const handlePunchOut = async () => {
-    const istTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+    const istTime = new Date().toLocaleString("en-US", {
+      timeZone: "Asia/Kolkata",
+    });
     // Convert to ISO 8601 format by parsing and formatting it
     const istDate = new Date(istTime);
-   const currentTime = istDate.toISOString();
+    const currentTime = istDate.toISOString();
     setPunchin(currentTime);
 
     const currentDate = istDate.toISOString();
-    console.log("currentTime", currentTime, "dsghs", currentDate)
     try {
       const response = await axios.put(
         `${import.meta.env.VITE_BACKEND_API}/punchout`,
         {
-         
           punchOut: currentTime,
           currentDate,
-          shiftType:NewProfile?.type,
+          shiftType: NewProfile?.type,
           user_id,
         }
       );
       localStorage.setItem("isPunchInDone", JSON.stringify(false));
-      setIsPunchInDone(false)
+      setIsPunchInDone(false);
       // setAttendanceInfo(prev => ({ ...prev, LastpunchOut: formatedPunchOut }));
 
-      getTodayAttendance()
+      getTodayAttendance();
 
-      setHidden(false)
-    getData();
-      // console.log(response.data);
+      setHidden(false);
+      getData();
     } catch (error) {
       console.error("Error sending checkout data:", error);
     }
@@ -431,7 +461,6 @@ console.log("payload", payload)
     setCheckoutClicked(true);
   };
 
-  console.log("getAtten", attendanceData)
 
   // const [date, setDate] = useState("");
   const [halfDayToday, setHalfDayToday] = useState(false);
@@ -443,7 +472,6 @@ console.log("payload", payload)
     attendanceData?.reduce((acc, curr) => {
       // Group entries by currentDate
       const currentDate = curr.currentDate;
-      // console.log("Current:", curr);
       if (!acc[currentDate]) {
         acc[currentDate] = {
           currentDate,
@@ -530,23 +558,7 @@ console.log("payload", payload)
       moment(a.currentDate, "MMM Do YY").valueOf() -
       moment(b.currentDate, "MMM Do YY").valueOf()
   );
-  // Filter the data based on the selected month and date
-  // const filteredDatas = finalDatas.filter((entry) => {
-  //   // Check if the entry's currentDate includes the selected month
-  //   if (!entry.currentDate.includes(selectedMonth)) {
-  //     return false;
-  //   }
 
-  //   // Check if the entry's currentDate matches the selected date
-  //   const formattedDate = moment(date).format("MMM Do YY");
-  //   // console.log(formattedDate);
-  //   if (date && entry.currentDate === formattedDate) {
-  //     return true;
-  //   }
-
-  //   // If no date is selected, return true to include all entries for the selected month
-  //   return !date;
-  // });
 
   const totalLate = finalDatas?.filter((e) => e.status === "LATE").length;
   const totalAbs = finalDatas?.filter((e) => e.status === "Absent").length;
@@ -581,7 +593,7 @@ console.log("payload", payload)
   const [punchin, setPunchin] = useState("");
   const [punchOut, setPunchOut] = useState("");
 
-  const [timeDifferenceMinutes, setTimeDifferenceMinutes] = useState(0); // State to hold the working time in minutes
+  const [timeDifferenceMinutes, setTimeDifferenceMinutes] = useState(0); 
 
   const [checkoutClicked, setCheckoutClicked] = useState(false);
 
@@ -768,7 +780,7 @@ console.log("payload", payload)
   // );
   // console.log("test");
   // const isLate =
-    // filteredPunchin.length > 0 && isCheckinLate(filteredPunchin[0].punchin);
+  // filteredPunchin.length > 0 && isCheckinLate(filteredPunchin[0].punchin);
   let timeDifference = null;
   if (filteredPunchin.length > 0 && filteredPunchOut.length > 0) {
     // Assuming filteredPunchin and filteredPunchOut are arrays containing login and logout times respectively
@@ -791,7 +803,7 @@ console.log("payload", payload)
     } catch (error) {
       console.error("Error sending checkout data:", error);
     }
-  } 
+  }
 
   const isTodayHalfDay = (punchin, punchOut) => {
     const today = moment().startOf("day"); // Start of today (midnight)
@@ -828,25 +840,33 @@ console.log("payload", payload)
     getIp();
     getLocation();
 
-    if (punchin && punchOut) setTimeDifferenceMinutes(calculateTimeDifference(punchin, punchOut));
-    if (!userToken) return navigate("/login");  
-    
-  }, [userToken, punchin,   punchOut, currentDate,  timeDifferenceMinutes,  userIP, selectedMonth]);
+    if (punchin && punchOut)
+      setTimeDifferenceMinutes(calculateTimeDifference(punchin, punchOut));
+    if (!userToken) return navigate("/login");
+  }, [
+    userToken,
+    punchin,
+    punchOut,
+    currentDate,
+    timeDifferenceMinutes,
+    userIP,
+    selectedMonth,
+  ]);
 
   // useEffect(() => {
   //   getData();
   // }, []);
 
-//   useEffect(() => {
-//  localStorage.setItem("isPunchInDone", JSON.stringify(isPunchInDone))
-//   }, [handlePunchOut]);
+  //   useEffect(() => {
+  //  localStorage.setItem("isPunchInDone", JSON.stringify(isPunchInDone))
+  //   }, [handlePunchOut]);
 
   useEffect(() => {
-   const storePunchBoolean = JSON.parse(localStorage.getItem("isPunchInDone"))
-   if( storePunchBoolean !== null){
-    setIsPunchInDone(storePunchBoolean)
-   }
-     }, [isPunchInDone]);
+    const storePunchBoolean = JSON.parse(localStorage.getItem("isPunchInDone"));
+    if (storePunchBoolean !== null) {
+      setIsPunchInDone(storePunchBoolean);
+    }
+  }, [isPunchInDone]);
 
   useEffect(() => {
     getConcernData();
@@ -856,112 +876,106 @@ console.log("payload", payload)
     <>
       {/* modal */}
       <Modal
-      title="Drop a message"
-      centered
-      open={isModalOpen}
-      onCancel={handleCancel}
-      footer={null}
-    >
-      <Form
-        form={form1}
-        layout="vertical"
-        onFinish={onFinish1}
+        title="Drop a message"
+        centered
+        open={isModalOpen}
+        onCancel={handleCancel}
+        footer={null}
       >
-        <Row gutter={16}>
-          <Col span={11}>
-            <Form.Item
-              name="ConcernDate"
-              label="Concern Date"
-              rules={[
-                {
-                  required: true,
-                  message: "Enter Concern Date",
-                },
-              ]}
-            >
-              <DatePicker
-                placeholder="Select Concern Date"
-                disabledDate={disabledDate}
-                format="YYYY-MM-DD"
-              />
-            </Form.Item>
-          </Col>
-        </Row>
+        <Form form={form1} layout="vertical" onFinish={onFinish1}>
+          <Row gutter={16}>
+            <Col span={11}>
+              <Form.Item
+                name="ConcernDate"
+                label="Concern Date"
+                rules={[
+                  {
+                    required: true,
+                    message: "Enter Concern Date",
+                  },
+                ]}
+              >
+                <DatePicker
+                  placeholder="Select Concern Date"
+                  disabledDate={disabledDate}
+                  format="YYYY-MM-DD"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
 
-        <Row gutter={16}>
-          <Col span={11}>
-            <Form.Item
-              name="ActualPunchIn"
-              label="Actual In Time"
-              rules={[
-                {
-                  required: true,
-                  message: "Enter In Time",
-                },
-              ]}
-            >
-              <TimePicker
-                placeholder="Select Actual In Time"
-                initialValue={moment('10:30:00', 'HH:mm:ss')}
-                format="HH:mm"
-              />
-            </Form.Item>
-          </Col>
-          <Col span={11}>
-            <Form.Item
-              name="ActualPunchOut"
-              label="Actual Out Time"
-              rules={[
-                {
-                  required: true,
-                  message: "Enter Out Time",
-                },
-              ]}
-            >
-              <TimePicker
-                placeholder="Select Actual Out Time"
-                initialValue={moment('07:30', 'HH:mm')}
-                format="HH:mm"
-              />
-            </Form.Item>
-          </Col>
-        </Row>
+          <Row gutter={16}>
+            <Col span={11}>
+              <Form.Item
+                name="ActualPunchIn"
+                label="Actual In Time"
+                rules={[
+                  {
+                    message: "Enter In Time",
+                  },
+                ]}
+              >
+                <TimePicker
+                  placeholder="Select Actual In Time"
+                  defaultValue={
+                    NewProfile?.type === "Day"
+                      ? moment("10:30 AM", "hh:mm:ss A")
+                      : moment("08:00 PM", "hh:mm:ss A")
+                  }
+                  format="hh:mm A"
+                />
+              </Form.Item>
+            </Col>
+            <Col span={11}>
+              <Form.Item
+                name="ActualPunchOut"
+                label="Actual Out Time"
+                rules={[
+                  {
+                    message: "Enter Out Time",
+                  },
+                ]}
+              >
+                <TimePicker
+                  placeholder="Select Actual Out Time"
+                  defaultValue={
+                    NewProfile?.type === "Day"
+                      ? moment("07:30 PM", "hh:mm A")
+                      : moment("05:00 AM", "hh:mm:ss A")
+                  }
+                  format="hh:mm A"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
 
-        <Row gutter={16}>
-          <Col span={11}>
-            <Form.Item
-              name="ConcernMessage"
-              label="Your Concern"
-              rules={[
-                {
-                  required: true,
-                  message: "Write your Concern",
-                },
-              ]}
-            >
-              <Input.TextArea placeholder="Write your Concern" />
-            </Form.Item>
-          </Col>
-        </Row>
+          <Row gutter={16}>
+            <Col span={11}>
+              <Form.Item
+                name="ConcernMessage"
+                label="Your Concern"
+                rules={[
+                  {
+                    required: true,
+                    message: "Write your Concern",
+                  },
+                ]}
+              >
+                <Input.TextArea placeholder="Write your Concern" />
+              </Form.Item>
+            </Col>
+          </Row>
 
-        <Space className="text-center d-flex my-4 gap-4">
-          <Button
-            type="primary"
-            htmlType="submit"
-            className="buttonFilled"
-          >
-            Submit
-          </Button>
-          <Button
-            type="button"
-            className="buttonLine"
-            onClick={handleCancel}
-          >
-            Cancel
-          </Button>
-        </Space>
-      </Form>
-    </Modal>
+          <Space className="text-center d-flex my-4 gap-4">
+            <Button type="primary" htmlType="submit" className="buttonFilled">
+              Submit
+            </Button>
+            <Button type="button" className="buttonLine" onClick={handleCancel}>
+              Cancel
+            </Button>
+          </Space>
+        </Form>
+      </Modal>
       <Modal
         title="Monthly View"
         centered
@@ -1149,7 +1163,9 @@ console.log("payload", payload)
             <div className="emp-punch-in-out-details">
               <h6 className="my-2">
                 <span style={{ color: "#0BC81E" }}>Punch in :</span>{" "}
-                {attendanceInfo.firstPunchIn  && <span>{attendanceInfo.firstPunchIn }</span>}
+                {attendanceInfo.firstPunchIn && (
+                  <span>{attendanceInfo.firstPunchIn}</span>
+                )}
                 {/* {loading ? (
                   <div className="spinner-border text-success" role="status">
                     <span className="visually-hidden">Loading...</span>
@@ -1163,15 +1179,25 @@ console.log("payload", payload)
 
               <h6 className="my-2">
                 <span style={{ color: "#FF0707" }}>Punch Out :</span>
-                { <span>{attendanceInfo.LastpunchOut}</span>}
-
-                
-              
+                {<span>{attendanceInfo.LastpunchOut}</span>}
               </h6>
-              <h6 className="my-2">Working Time : {attendanceInfo.totalWorkingTime  !== null  && attendanceInfo.totalWorkingTime} </h6>
+              <h6 className="my-2">
+                Working Time :{" "}
+                {attendanceInfo.totalWorkingTime !== null &&
+                  attendanceInfo.totalWorkingTime}{" "}
+              </h6>
               <h6 className="my-2">IP Address : {userIP} </h6>
               <h6 className="my-2">
-                Status :{" "} <span style={{color: (attendanceInfo.status) === "On Time" ? "#0BC81E": "red"}}> {attendanceInfo.status}  </span>
+                Status :{" "}
+                <span
+                  style={{
+                    color:
+                      attendanceInfo.status === "On Time" ? "#0BC81E" : "red",
+                  }}
+                >
+                  {" "}
+                  {attendanceInfo.status}{" "}
+                </span>
                 <span style={{ color: "#0BC81E" }}>
                   {/* {" "}
                   {filteredPunchOut.length > 0 ? (
@@ -1185,7 +1211,21 @@ console.log("payload", payload)
                   )}{" "} */}
                 </span>
               </h6>
-              <h6 classNAme="my-3"> Work Status : <span style={{color: (attendanceInfo.workStatus) === "Full Day" ? "#0BC81E": "red"}}>  {attendanceInfo?.workStatus} </span></h6>
+              <h6 classNAme="my-3">
+                {" "}
+                Work Status :{" "}
+                <span
+                  style={{
+                    color:
+                      attendanceInfo.workStatus === "Full Day"
+                        ? "#0BC81E"
+                        : "red",
+                  }}
+                >
+                  {" "}
+                  {attendanceInfo?.workStatus}{" "}
+                </span>
+              </h6>
             </div>
           </div>
           {/* </div> */}
@@ -1313,27 +1353,30 @@ function getCurrentDateFormatted() {
 const checkinTime = (currentTime) => {
   const punchInDate = moment(currentTime); // current punch-in time using moment
 
-  if (NewProfile?.type === 'Day') {
+  if (NewProfile?.type === "Day") {
     const lateStart = moment(punchInDate).hours(10).minutes(40).seconds(0); // set to 10:40 AM same day
     return punchInDate.isSameOrAfter(lateStart);
-  } else if (NewProfile?.type === 'Night') {
+  } else if (NewProfile?.type === "Night") {
     // Night shift starts at 8:40 PM, but can roll over into the next day
     const lateStart = moment(punchInDate).hours(20).minutes(40).seconds(0); // set to 8:40 PM same day
-    const lateEnd = moment(punchInDate).add(1, 'day').hours(8).minutes(40).seconds(0); // set late end time to 8:40 AM next day
+    const lateEnd = moment(punchInDate)
+      .add(1, "day")
+      .hours(8)
+      .minutes(40)
+      .seconds(0); // set late end time to 8:40 AM next day
 
     console.log("PUNCH IN TIME -->", punchInDate.format());
     console.log("LATE START -->", lateStart.format());
     console.log("LATE END -->", lateEnd.format());
 
     // Check if punchInDate falls between lateStart and lateEnd (spanning two days)
-    return punchInDate.isSameOrAfter(lateStart) || punchInDate.isBefore(lateEnd);
+    return (
+      punchInDate.isSameOrAfter(lateStart) || punchInDate.isBefore(lateEnd)
+    );
   }
 
   return false;
 };
-
-
-
 
 // function isCheckinLate(checkinTime) {
 //   // Assuming threshold time is between 10:41:00 AM and 12:00:00 PM

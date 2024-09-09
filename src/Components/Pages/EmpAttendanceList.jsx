@@ -11,165 +11,136 @@ import moment from 'moment';
 // import "../style/Project.css"
 const EmpAttendanceList = () => {
 
-  const [selectedMonth, setSelectedMonth] = useState('')
   const [date, setDate] = useState("")
   const [searchTerm, setSearchTerm] = useState('')
+  const [attendanceData, setAttendanceData] = useState([])
+  const [attendanceList, setAttendanceList] = useState([])
+  const [absentCount, setAbsentCount] = useState(0);
+  const [absentCountCurrentMonth, setAbsentCountCurrentMonth] = useState(0);
+  const [absentCountSelectedMonth, setAbsentCountSelectedMonth] = useState(0);
+  const [selectedMonth, setSelectedMonth] = useState(moment().month()); // Default to current month index
 
+  console.log("absentCountCurrentMonth", absentCountCurrentMonth)
+  const [attendanceInfo, setAttendanceInfo] = useState({
+    firstPunchIn: null,
+    LastpunchOut: null,
+    totalWorkingTime: null,
+    workStatus: null,
+    status: null,
+  });
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
 
   // Function to handle the change in the select input
+  // const handleMonthChange = (event) => {
+  //   setSelectedMonth(event.target.value)
+  // }
+
   const handleMonthChange = (event) => {
-    setSelectedMonth(event.target.value)
-  }
+    const month = parseInt(event.target.value, 10);
+    setSelectedMonth(month);
+  };
 
   const Profile = localStorage.getItem('user')
   const NewProfile = JSON.parse(Profile)
   const user_id = NewProfile?._id
 
-  const [attendanceData, setAttendanceData] = useState([])
   console.log("userid",user_id)
   async function getData() {
     const res = await axios.get(`${import.meta.env.VITE_BACKEND_API}/attendance/${user_id}`)
-    setAttendanceData(res.data.attendance)
+    setAttendanceData(res.data?.attendance)
   }
-  const groupedData = Object.values(
-    attendanceData.reduce((acc, curr) => {
-      // Group entries by currentDate
-      const currentDate = curr.currentDate
-      // console.log("Current:", curr);
-      if (!acc[currentDate]) {
-        acc[currentDate] = {
-          currentDate,
-          userName: '',
-          userEmail: '',
-          punchin: '',
-          punchOut: '',
-          time: '',
-          status: '',
-          ip: ''
-        }
-      }
 
-      // Merge punchin, punchOut, status, and ip
-      if (curr.userName) {
-        acc[currentDate].userName = curr.userName
-      }
-      if (curr.userEmail) {
-        acc[currentDate].userEmail = curr.userEmail
-      }
-      if (curr.punchin) {
-        acc[currentDate].punchin = curr.punchin
-      }
-      if (curr.punchOut) {
-        acc[currentDate].punchOut = curr.punchOut
-      }
-      if (curr.time) {
-        acc[currentDate].time = curr.time
-      }
-      if (curr.status) {
-        acc[currentDate].status = curr.status
-      }
-      if (curr.ip) {
-        acc[currentDate].ip = curr.ip
-      }
 
-      return acc
-    }, {}),
-  )
-  console.log(groupedData)
-  // Add missing weekend days between the data
-  const weekendEntries = [];
-  const weekdayEntries = [];
+  async function getEmpAttendanceData() {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_BACKEND_API}/attendancelist/${user_id}`
+      );
+      setAttendanceList(res?.data?.data?.reverse())
 
-  // Iterate over groupedData to add missing entries
-  groupedData.forEach((entry, index) => {
-    if (index > 0) {
-      const currentDate = moment(entry.currentDate, "MMM Do YY");
-      const prevDate = moment(groupedData[index - 1].currentDate, "MMM Do YY");
-      const diffDays = currentDate.diff(prevDate, "days");
-      for (let i = 1; i < diffDays; i++) {
-        const missingDate = prevDate.clone().add(i, "days");
-        if (missingDate.day() === 6 || missingDate.day() === 0) {
-          // If the missing date is Saturday or Sunday, add an entry with "Week Off" status
-          weekendEntries.push({
-            userName: entry.userName,
-            userEmail: entry.userEmail,
-            currentDate: missingDate.format("MMM Do YY"),
-            punchin: "",
-            punchOut: "",
-            time: "",
-            status: "Week Off",
-            ip: ""
-          });
-        } else {
-          // If the missing date is a weekday, add an entry with "Absent" status
-          weekdayEntries.push({
-            userName: "",
-            userEmail: "",
-            currentDate: missingDate.format("MMM Do YY"),
-            punchin: "",
-            punchOut: "",
-            time: "",
-            status: "Absent",
-            ip: ""
-          });
-        }
-      }
+  
+    } catch (err) {
+      console.log(err);
     }
-  });
+  }
 
-  // Merge the original data with the added weekend and weekday entries
-  const finalData = [...groupedData, ...weekendEntries, ...weekdayEntries];
 
-  // Sort the data by currentDate
-  finalData.sort((a, b) => moment(a.currentDate, "MMM Do YY").valueOf() - moment(b.currentDate, "MMM Do YY").valueOf());
 
-  console.log(finalData);
-
-  // Filter the data based on the selected month and date
-  const filteredData = finalData.filter((entry) => {
-    // Check if the entry's currentDate includes the selected month
-    if (!entry.currentDate.includes(selectedMonth)) {
-      return false;
-    }
-
-    // Check if the entry's currentDate matches the selected date
-    const formattedDate = moment(date).format("MMM Do YY");;
-    // console.log(formattedDate);
-    if (date && entry.currentDate === formattedDate) {
-      return true;
-    }
-
-    // If no date is selected, return true to include all entries for the selected month
-    return !date;
-  });
-  console.log(filteredData)
-
-  useEffect(() => {
-    getData()
-  }, [selectedMonth])
-
-  const totalLate = filteredData?.filter((e) => e.status === "LATE").length
-  const totalAbs = filteredData?.filter((e) => e.status === "Absent").length
-  // Calculate half day count
-  const halfDayCount = filteredData?.filter((entry) => {
-    if (entry.status === 'Week Off' || entry.status === 'Absent') {
-      return false;
-    }
-
-    const punchInTime = moment(entry.punchin, 'h:mm:ss A');
-    const punchOutTime = moment(entry.punchOut, 'h:mm:ss A');
-
-    const duration = moment.duration(punchOutTime.diff(punchInTime)).asHours();
-    return duration < 7 && duration > 0;
-  }).length;
-
-  // this one is for antdesign date
-  const onChange = (date, dateString) => {
-    console.log(date, dateString);
+  const formatTime = (date) => {
+    const dateIst = new Date(date);
+    // Convert to IST (UTC+5:30)
+    dateIst.setHours(dateIst.getHours());
+    dateIst.setMinutes(dateIst.getMinutes());
+    return new Intl.DateTimeFormat("en-IN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+    }).format(dateIst);
   };
+  const formatTotalWorkingTime = (time)=> {
+    const totalWorkingTimeMinutes = time; // Example value in minutes
+    const hours = Math.floor(totalWorkingTimeMinutes / 60); // Calculate hours
+    const minutes = Math.round(totalWorkingTimeMinutes % 60);
+    const formatedWorkingTime = `${
+      hours < 1 ? "00" : hours < 10 ? "0" + hours : hours
+    }h   ${minutes}m`;
+    return  `${hours < 1 ? "00" : hours < 10 ? "0" + hours : hours}h   ${minutes}m`
+}
+const calculateAbsentDays = (startDate, endDate) => {
+  const allDates = [];
+  const absentDates = new Set();
+
+  // Generate list of all dates in the range
+  for (let m = moment(startDate); m.isBefore(endDate); m.add(1, 'days')) {
+    allDates.push(m.format('YYYY-MM-DD'));
+  }
+
+  // Generate set of dates from attendance data
+  const presentDates = new Set(
+    attendanceList.map(item => item.currentDate)
+  );
+
+  // Identify weekends
+  const weekends = new Set();
+  for (let m = moment(startDate); m.isBefore(endDate); m.add(1, 'days')) {
+    if (m.day() === 0 || m.day() === 6) {
+      weekends.add(m.format('YYYY-MM-DD'));
+    }
+  }
+
+  // Identify absent dates
+  allDates.forEach(date => {
+    if (!presentDates.has(date) && !weekends.has(date)) {
+      absentDates.add(date);
+    }
+  });
+
+  return absentDates.size;
+};
+
+
+
+useEffect(() => {
+  // Calculate absent days for the current month
+  const startCurrentMonth = moment().startOf('month');
+  const endCurrentMonth = moment().endOf('month');
+  setAbsentCountCurrentMonth(calculateAbsentDays(startCurrentMonth, endCurrentMonth));
+
+  // Calculate absent days for the selected month
+  const startSelectedMonth = moment().startOf('year').month(selectedMonth).startOf('month');
+  const endSelectedMonth = moment(startSelectedMonth).endOf('month');
+  setAbsentCountSelectedMonth(calculateAbsentDays(startSelectedMonth, endSelectedMonth));
+}, [attendanceList, selectedMonth]);
+useEffect(() => {
+  calculateAbsentDays();
+}, [attendanceList]);
+
+  useEffect(()=> {
+    getEmpAttendanceData()
+  },[])
   return (
     <>
       <div className="employee-project-container container">
@@ -221,9 +192,15 @@ const EmpAttendanceList = () => {
               <div className="list-of-days">
                 
                 <div className="emp-holidays-btn">
-                <button style={{ height: "25px", width: "300px", borderRadius: "10px", background: "#f3f3fb", color: "#72757a", fontSize: "0.8rem", border: "1px solid #dcd2d2" }}>Late : {totalLate}</button>
-                  <button style={{ height: "25px", width: "300px", borderRadius: "10px", background: "#f3f3fb", color: "#72757a", fontSize: "0.8rem", border: "1px solid #dcd2d2" }}>Absent : {totalAbs}</button>
-                  <button style={{ height: "25px", width: "330px", borderRadius: "10px", background: "#f3f3fb", color: "#72757a", fontSize: "0.8rem", border: "1px solid #dcd2d2" }}>Half Day : {halfDayCount}</button>
+                <button style={{ height: "25px", width: "300px", borderRadius: "10px", background: "#f3f3fb", color: "#72757a", fontSize: "0.8rem", border: "1px solid #dcd2d2" }}>Late :
+                   {/* {totalLate && totalLate} */}
+                   </button>
+                  <button style={{ height: "25px", width: "300px", borderRadius: "10px", background: "#f3f3fb", color: "#72757a", fontSize: "0.8rem", border: "1px solid #dcd2d2" }}>Absent : 
+                    {/* {totalAbs} */}
+                    </button>
+                  <button style={{ height: "25px", width: "330px", borderRadius: "10px", background: "#f3f3fb", color: "#72757a", fontSize: "0.8rem", border: "1px solid #dcd2d2" }}>Half Day : 
+                    {/* {halfDayCount} */}
+                    </button>
                 </div>
                 <div className="sort"  >
 
@@ -239,9 +216,7 @@ const EmpAttendanceList = () => {
 
                 </div>
               </div>
-              {/* <div className="list">
-                                <span><FaListUl style={{ marginRight: "10px" }} />List <button style={{ border: "1px solid #FF560E", marginLeft: "10px", background: "#fff", color: "#FF560E", padding: "2px 5px", borderRadius: "10px", fontSize: "0.8rem" }}>Automation</button></span>
-                            </div> */}
+
               {/* <div>
                                 <button style={{ border: "1px solid #FF560E", background: "#fff", color: "#FF560E", padding: "2px 5px", borderRadius: "10px", fontSize: "0.8rem" }}>Automation</button>
                             </div> */}
@@ -266,17 +241,26 @@ const EmpAttendanceList = () => {
                   </svg>
                   </span>Status</th>
                   <th scope="col">IP Address</th>
+                  <th scope="col">Work Status</th>
+
                 </tr>
               </thead>
               <tbody>
 
-                {filteredData?.map((res, index) => {
+                {attendanceList?.map((res, index) => {
+
+                    const firstPunchIn = res.punches[0]?.punchIn && formatTime(res.punches[0].punchIn) 
+                    
+                    const lastPunchout = res.punches[res.punches.length -1]?.punchOut   ?    res.punches[res?.punches.length -1]?.punchOut   : res.punches[res?.punches.length -2]?.punchOut 
+                    && res.punches[res?.punches?.length -2].punchOut
+                    
                   return (
                     <tr key={res._id}>
                       <td>{res.currentDate}</td>
-                      <td>{res.punchin}</td>
-                      <td>{res.punchOut}</td>
-                      <td>{res.time}</td>
+                    
+                      <td>{firstPunchIn}</td>
+                      <td> {lastPunchout ? formatTime(lastPunchout)  : "Punch Out not Done"}</td>
+                      <td>{res?.totalWorkingTime ? formatTotalWorkingTime(res.totalWorkingTime) : '0'}</td>
                       <td
                         style={{
                           
@@ -286,6 +270,7 @@ const EmpAttendanceList = () => {
                         {res.status}
                       </td>
                       <td>{res.ip}</td>
+                      <td>{res.workStatus}</td>
                     </tr>
                   )
                 })}
