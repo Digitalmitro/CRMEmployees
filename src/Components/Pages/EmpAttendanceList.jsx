@@ -18,7 +18,7 @@ const EmpAttendanceList = () => {
   const [absentCount, setAbsentCount] = useState(0);
   const [absentCountCurrentMonth, setAbsentCountCurrentMonth] = useState(0);
   const [absentCountSelectedMonth, setAbsentCountSelectedMonth] = useState(0);
-  const [selectedMonth, setSelectedMonth] = useState(moment().month()); // Default to current month index
+  const [selectedMonth, setSelectedMonth] = useState(''); // Default to current month index
   const [CompleteEndLate, setCompleteEndLate] = useState(0);
   const [completeEndHalfDay, setcompleteEndHalfDay] = useState(0);
   console.log("absentCountCurrentMonth", absentCountCurrentMonth)
@@ -84,55 +84,47 @@ const EmpAttendanceList = () => {
     }h   ${minutes}m`;
     return  `${hours < 1 ? "00" : hours < 10 ? "0" + hours : hours}h   ${minutes}m`
 }
-const calculateAbsentDays = (startDate, endDate) => {
-  const allDates = [];
-  const absentDates = new Set();
 
-  // Generate list of all dates in the range
-  for (let m = moment(startDate); m.isBefore(endDate); m.add(1, 'days')) {
-    allDates.push(m.format('YYYY-MM-DD'));
-  }
 
-  // Generate set of dates from attendance data
-  const presentDates = new Set(
-    attendanceList.map(item => item.currentDate)
-  );
+const filteredAttendanceList = attendanceList.filter((entry) => {
+  if (!selectedMonth) return true; // If no month is selected, show all data
 
-  // Identify weekends
-  const weekends = new Set();
-  for (let m = moment(startDate); m.isBefore(endDate); m.add(1, 'days')) {
-    if (m.day() === 0 || m.day() === 6) {
-      weekends.add(m.format('YYYY-MM-DD'));
-    }
-  }
+  const entryMonth = moment(entry.currentDate).format('MMM'); // Format to get month abbreviation
+  return entryMonth === selectedMonth;
+});
 
-  // Identify absent dates
-  allDates.forEach(date => {
-    if (!presentDates.has(date) && !weekends.has(date)) {
-      absentDates.add(date);
-    }
-  });
 
-  return absentDates.size;
+const isWeekday = (date) => {
+  const day = moment(date).day(); // Get the day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+  return day >= 1 && day <= 5; // Return true if it's Monday to Friday
 };
 
-
-
 useEffect(() => {
-  // Calculate absent days for the current month
-  const startCurrentMonth = moment().startOf('month');
-  const endCurrentMonth = moment().endOf('month');
-  setAbsentCountCurrentMonth(calculateAbsentDays(startCurrentMonth, endCurrentMonth));
+  const calculateAbsences = () => {
+    const absentDates = new Set();
+    const today = moment(); // Get today's date
 
-  // Calculate absent days for the selected month
-  const startSelectedMonth = moment().startOf('year').month(selectedMonth).startOf('month');
-  const endSelectedMonth = moment(startSelectedMonth).endOf('month');
-  setAbsentCountSelectedMonth(calculateAbsentDays(startSelectedMonth, endSelectedMonth));
-}, [attendanceList, selectedMonth]);
-useEffect(() => {
-  calculateAbsentDays();
-}, [attendanceList]);
+    // Iterate over a range of dates for the current month
+    for (let m = moment().startOf('month'); m.isSameOrBefore(today, 'day'); m.add(1, 'day')) {
+      if (isWeekday(m)) { // Check only for weekdays
+        const formattedDate = m.format('YYYY-MM-DD');
+        const isAbsent = !attendanceList.some(entry => moment(entry.currentDate).format('YYYY-MM-DD') === formattedDate);
 
+        if (isAbsent) {
+          absentDates.add(formattedDate);
+          // setAbsentCount++
+        }
+      }
+    }
+    console.log("absentDates", absentDates)
+
+    // Set the count of absents
+    setAbsentCount(absentDates.size);
+  };
+
+  calculateAbsences();
+}, [attendanceList]); // Recalculate when attendanceList changes
+console.log("absentCount", absentCount)
 
 useEffect(() => {
   const calculateTotals = () => {
@@ -158,6 +150,10 @@ useEffect(() => {
   // Call the function to calculate totals
   calculateTotals();
 }, [attendanceList]);
+
+
+
+
   useEffect(()=> {
     getEmpAttendanceData()
   },[])
@@ -185,20 +181,8 @@ useEffect(() => {
 
                     </div>
                     <div className="emp-select-month"style={{width:"123px",paddingRight:"0.2rem",height:"34px"}}>
-                        {/* <Space direction="vertical" style={{ border: "none", outline: "none" }}>
-                            <DatePicker onChange={(e) => setDate(e.target.value)} />
-
-                        </Space> */}
+                      
                         <input onChange={(e) => setDate(e.target.value)} style={{ width: '118px', height: '30px',   color: "#222" }} type="date" />
-
-                        {/* for search */}
-                        {/* <input
-                            value={searchTerm}
-                            onChange={handleSearchChange}
-                            placeholder="search"
-                            className="search shadow"
-                            style={{ height: '45px', marginLeft: '10px', border: 'none' }}
-                        /> */}
                     </div>
                 </div>
         <hr />
@@ -216,7 +200,7 @@ useEffect(() => {
                     { CompleteEndLate} 
                    </button>
                   <button style={{ height: "25px", width: "300px", borderRadius: "10px", background: "#f3f3fb", color: "#72757a", fontSize: "0.8rem", border: "1px solid #dcd2d2" }}>Absent : 
-                    {/* {totalAbs} */}
+                     {absentCount}
                     </button>
                   <button style={{ height: "25px", width: "330px", borderRadius: "10px", background: "#f3f3fb", color: "#72757a", fontSize: "0.8rem", border: "1px solid #dcd2d2" }}>Half Day : 
                      {completeEndHalfDay} 
@@ -229,23 +213,12 @@ useEffect(() => {
                             value={searchTerm}
                             onChange={handleSearchChange}
                             placeholder="search"
-                            
                             style={{ height: '20px',height:"5vh", marginLeft: '10px',paddingLeft:"5px",borderRadius:"6px",outline:"none",width:"70%",boxShadow:" 1px 1px 2px 1px gray",border:"none" }}
                         />
-                 
-
                 </div>
               </div>
 
-              {/* <div>
-                                <button style={{ border: "1px solid #FF560E", background: "#fff", color: "#FF560E", padding: "2px 5px", borderRadius: "10px", fontSize: "0.8rem" }}>Automation</button>
-                            </div> */}
-              {/* <div className="sort"  >
-
-                                <span><FaFilter style={{ color: "FF560E", fontSize: "0.8rem" }} /> </span>
-                                <span><BsThreeDots style={{ color: "FF560E", fontSize: "0.8rem" }} /> </span>
-                              
-                            </div> */}
+           
             </div>
             <table class="table table-bordered">
               <thead>
@@ -267,16 +240,18 @@ useEffect(() => {
               </thead>
               <tbody>
 
-                {attendanceList?.map((res, index) => {
+                {filteredAttendanceList?.map((res, index) => {
 
                     const firstPunchIn = res.punches[0]?.punchIn && formatTime(res.punches[0].punchIn) 
                     
                     const lastPunchout = res.punches[res.punches.length -1]?.punchOut   ?    res.punches[res?.punches.length -1]?.punchOut   : res.punches[res?.punches.length -2]?.punchOut 
                     && res.punches[res?.punches?.length -2].punchOut
+
+                    const formattedCuurentDate = moment(res.currentDate).format('MMM-Do-YYYY');
                     
                   return (
                     <tr key={res._id}>
-                      <td>{res.currentDate}</td>
+                      <td>{formattedCuurentDate}</td>
                     
                       <td>{firstPunchIn}</td>
                       <td> {lastPunchout ? formatTime(lastPunchout)  : "Punch Out not Done"}</td>
