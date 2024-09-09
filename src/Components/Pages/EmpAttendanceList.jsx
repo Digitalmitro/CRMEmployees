@@ -19,7 +19,8 @@ const EmpAttendanceList = () => {
   const [absentCountCurrentMonth, setAbsentCountCurrentMonth] = useState(0);
   const [absentCountSelectedMonth, setAbsentCountSelectedMonth] = useState(0);
   const [selectedMonth, setSelectedMonth] = useState(moment().month()); // Default to current month index
-
+  const [CompleteEndLate, setCompleteEndLate] = useState(0);
+  const [completeEndHalfDay, setcompleteEndHalfDay] = useState(0);
   console.log("absentCountCurrentMonth", absentCountCurrentMonth)
   const [attendanceInfo, setAttendanceInfo] = useState({
     firstPunchIn: null,
@@ -31,11 +32,6 @@ const EmpAttendanceList = () => {
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
-
-  // Function to handle the change in the select input
-  // const handleMonthChange = (event) => {
-  //   setSelectedMonth(event.target.value)
-  // }
 
   const handleMonthChange = (event) => {
     const month = parseInt(event.target.value, 10);
@@ -51,7 +47,6 @@ const EmpAttendanceList = () => {
     const res = await axios.get(`${import.meta.env.VITE_BACKEND_API}/attendance/${user_id}`)
     setAttendanceData(res.data?.attendance)
   }
-
 
   async function getEmpAttendanceData() {
     try {
@@ -138,6 +133,31 @@ useEffect(() => {
   calculateAbsentDays();
 }, [attendanceList]);
 
+
+useEffect(() => {
+  const calculateTotals = () => {
+    let totalLate = 0;
+    let totalHalfDay = 0;
+
+    // Iterate over the attendance list and count the statuses
+    attendanceList.forEach((entry) => {
+      if (entry.status === "Late") {
+        totalLate += 1;
+      } if (entry.workStatus === "Half Day") {
+        console.log("entry", entry)
+        totalHalfDay += 1;
+      }
+    });
+    setCompleteEndLate(totalLate);
+    setcompleteEndHalfDay(totalHalfDay);
+    // Log or set the state with the totals
+    console.log("Total Late:", totalLate);
+    console.log("Total Half Day:", totalHalfDay);
+  };
+
+  // Call the function to calculate totals
+  calculateTotals();
+}, [attendanceList]);
   useEffect(()=> {
     getEmpAttendanceData()
   },[])
@@ -193,13 +213,13 @@ useEffect(() => {
                 
                 <div className="emp-holidays-btn">
                 <button style={{ height: "25px", width: "300px", borderRadius: "10px", background: "#f3f3fb", color: "#72757a", fontSize: "0.8rem", border: "1px solid #dcd2d2" }}>Late :
-                   {/* {totalLate && totalLate} */}
+                    { CompleteEndLate} 
                    </button>
                   <button style={{ height: "25px", width: "300px", borderRadius: "10px", background: "#f3f3fb", color: "#72757a", fontSize: "0.8rem", border: "1px solid #dcd2d2" }}>Absent : 
                     {/* {totalAbs} */}
                     </button>
                   <button style={{ height: "25px", width: "330px", borderRadius: "10px", background: "#f3f3fb", color: "#72757a", fontSize: "0.8rem", border: "1px solid #dcd2d2" }}>Half Day : 
-                    {/* {halfDayCount} */}
+                     {completeEndHalfDay} 
                     </button>
                 </div>
                 <div className="sort"  >
