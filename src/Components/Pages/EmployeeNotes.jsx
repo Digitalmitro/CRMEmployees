@@ -49,7 +49,7 @@ const EmployeeNotes = () => {
       } catch (error) {
         console.log(error);
       }
-    }, 1000), // Adjust the debounce delay as needed
+    }, 500), // Adjust the debounce delay as needed
     []
   );
 
