@@ -97,7 +97,7 @@ const EmployeeAttendance = () => {
         message: leaveConcern,
         date: formattedDate,
         status: "pending",
-        punchType: "Leave Application",
+        concernType: "Leave Application",
         user_id,
       };
       // Send POST request to the server
@@ -326,6 +326,7 @@ const EmployeeAttendance = () => {
     const payload = {
       name,
       email,
+      concernType: "Regularization Request",
       message: ConcernMessage,
       shiftType: NewProfile?.type,
       ActualPunchIn: formattedActualPunchIn,

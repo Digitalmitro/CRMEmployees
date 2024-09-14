@@ -51,7 +51,7 @@ const EmployeeNotes = () => {
       }
     }, 500), // Adjust the debounce delay as needed
     []
-  );
+);
 
   function handleChange(e) {
     const newNotes = e.target.value;
