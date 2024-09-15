@@ -331,9 +331,9 @@ const EmployeeAttendance = () => {
       shiftType: NewProfile?.type,
       ActualPunchIn: formattedActualPunchIn,
       ActualPunchOut: formattedActualPunchOut,
-      currenDate: moment().format("MMMM Do YYYY, h:mm:ss a"),
+      date: moment(ConcernDate.$d).format("MMMM Do YYYY"),
       status: "Pending",
-      ConcernDate: moment(ConcernDate.$d).format("MMMM Do YYYY"),
+      // ConcernDate: moment(ConcernDate.$d).format("MMMM Do YYYY"),
       user_id,
     };
     try {
@@ -1379,23 +1379,3 @@ const checkinTime = (currentTime) => {
   return false;
 };
 
-// function isCheckinLate(checkinTime) {
-//   // Assuming threshold time is between 10:41:00 AM and 12:00:00 PM
-//   const startTime = moment("10:40:59 AM", "hh:mm:ss A");
-//   const endTime = moment("7:59:00 PM", "hh:mm:ss A");
-//   const checkin = moment(checkinTime, "hh:mm:ss A");
-//   // console.log(checkin)
-//   return checkin.isBetween(startTime, endTime);
-// }
-
-// function checkinTime(currentTime) {
-//   // Assuming threshold time is between 10:41:00 AM and 12:00:00 PM
-//   const startTime = moment("10:40:59 AM", "hh:mm:ss A");
-//   const endTime = moment("7:59:00 PM", "hh:mm:ss A");
-//   const checkin = moment(currentTime, "hh:mm:ss A");
-//   console.log("checkin",checkin, startTime, endTime)
-//   return checkin.isBetween(startTime, endTime);
-// }
-// Example usage:
-const lateCheckin = "08:40:00 PM"; // Assuming the check-in time
-// console.log("LATE", isCheckinLate(lateCheckin)); // Should return true or false based on the check-in time
