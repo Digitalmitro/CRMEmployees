@@ -114,6 +114,20 @@ const EmployeeAttendance = () => {
     }
   };
 
+  const checkPunchStatus = async () => {
+    await axios
+      .get(`${import.meta.env.VITE_BACKEND_API}/attendance/status/${user_id}`, {
+        headers: { token: userToken },
+      })
+      .then((res) => {
+        console.log(res.data);
+        setIsPunchInDone(res.data.isPunchedIn);
+      })
+      .catch((e) => {
+        console.log(e.response);
+      });
+  };
+
   const showModal = () => {
     setIsModalOpen(true);
   };
@@ -159,7 +173,6 @@ const EmployeeAttendance = () => {
     }
   }
 
-
   async function getEmpAttendanceData() {
     try {
       const res = await axios.get(
@@ -171,14 +184,13 @@ const EmployeeAttendance = () => {
       console.log(err);
     }
   }
-  useEffect(()=> {
-    getEmpAttendanceData()
-  },[])
+  useEffect(() => {
+    getEmpAttendanceData();
+  }, []);
 
   async function getTodayAttendance() {
     const currentDate = new Date().toISOString();
     try {
-     
       const res = await axios.get(
         `${
           import.meta.env.VITE_BACKEND_API
@@ -258,6 +270,10 @@ const EmployeeAttendance = () => {
   useEffect(() => {
     getTodayAttendance();
   }, []);
+
+  useEffect(() => {
+    checkPunchStatus();
+  }, [isPunchInDone]);
 
   const getIp = async () => {
     // Fetch user's IP address
@@ -416,8 +432,7 @@ const EmployeeAttendance = () => {
         `${import.meta.env.VITE_BACKEND_API}/attendance`,
         payload
       );
-      localStorage.setItem("isPunchInDone", JSON.stringify(true));
-      setIsPunchInDone(true);
+      checkPunchStatus();
       getTodayAttendance();
 
       setHidden(true);
@@ -447,8 +462,7 @@ const EmployeeAttendance = () => {
           user_id,
         }
       );
-      localStorage.setItem("isPunchInDone", JSON.stringify(false));
-      setIsPunchInDone(false);
+      checkPunchStatus();
       // setAttendanceInfo(prev => ({ ...prev, LastpunchOut: formatedPunchOut }));
 
       getTodayAttendance();
@@ -461,7 +475,6 @@ const EmployeeAttendance = () => {
     getData();
     setCheckoutClicked(true);
   };
-
 
   // const [date, setDate] = useState("");
   const [halfDayToday, setHalfDayToday] = useState(false);
@@ -560,7 +573,6 @@ const EmployeeAttendance = () => {
       moment(b.currentDate, "MMM Do YY").valueOf()
   );
 
-
   const totalLate = finalDatas?.filter((e) => e.status === "LATE").length;
   const totalAbs = finalDatas?.filter((e) => e.status === "Absent").length;
   // Calculate half day count
@@ -594,7 +606,7 @@ const EmployeeAttendance = () => {
   const [punchin, setPunchin] = useState("");
   const [punchOut, setPunchOut] = useState("");
 
-  const [timeDifferenceMinutes, setTimeDifferenceMinutes] = useState(0); 
+  const [timeDifferenceMinutes, setTimeDifferenceMinutes] = useState(0);
 
   const [checkoutClicked, setCheckoutClicked] = useState(false);
 
@@ -862,12 +874,12 @@ const EmployeeAttendance = () => {
   //  localStorage.setItem("isPunchInDone", JSON.stringify(isPunchInDone))
   //   }, [handlePunchOut]);
 
-  useEffect(() => {
-    const storePunchBoolean = JSON.parse(localStorage.getItem("isPunchInDone"));
-    if (storePunchBoolean !== null) {
-      setIsPunchInDone(storePunchBoolean);
-    }
-  }, [isPunchInDone]);
+  // useEffect(() => {
+  //   const storePunchBoolean = JSON.parse(localStorage.getItem("isPunchInDone"));
+  //   if (storePunchBoolean !== null) {
+  //     setIsPunchInDone(storePunchBoolean);
+  //   }
+  // }, [isPunchInDone]);
 
   useEffect(() => {
     getConcernData();
@@ -1358,13 +1370,13 @@ const checkinTime = (currentTime) => {
     const lateStart = moment(punchInDate).hours(10).minutes(40).seconds(0); // set to 10:40 AM same day
     return punchInDate.isSameOrAfter(lateStart);
   } else if (NewProfile?.type === "Night") {
-    // Night shift starts at 8:40 PM, but can roll over into the next day
-    const lateStart = moment(punchInDate).hours(20).minutes(40).seconds(0); // set to 8:40 PM same day
+    // Night shift starts at 8:10 PM, but can roll over into the next day
+    const lateStart = moment(punchInDate).hours(20).minutes(10).seconds(0); // set to 8:10 PM same day
     const lateEnd = moment(punchInDate)
       .add(1, "day")
       .hours(8)
-      .minutes(40)
-      .seconds(0); // set late end time to 8:40 AM next day
+      .minutes(10)
+      .seconds(0); // set late end time to 8:10 AM next day
 
     console.log("PUNCH IN TIME -->", punchInDate.format());
     console.log("LATE START -->", lateStart.format());
@@ -1378,4 +1390,3 @@ const checkinTime = (currentTime) => {
 
   return false;
 };
-

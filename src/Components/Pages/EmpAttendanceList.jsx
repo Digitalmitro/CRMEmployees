@@ -20,6 +20,7 @@ const EmpAttendanceList = () => {
   const Profile = localStorage.getItem("user");
   const NewProfile = JSON.parse(Profile);
   const user_id = NewProfile?._id;
+  const userToken = localStorage.getItem("userToken");
 
   async function getEmpAttendanceData() {
     try {
@@ -28,7 +29,8 @@ const EmpAttendanceList = () => {
           import.meta.env.VITE_BACKEND_API
         }/attendancelist/${user_id}?month=${selectedMonth}${
           date ? `&date=${date}` : ""
-        }`
+        }`,
+        { headers: { token: userToken } }
       );
       setAttendanceList(res?.data?.data?.reverse());
     } catch (err) {
