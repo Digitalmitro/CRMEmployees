@@ -194,7 +194,8 @@ const EmployeeAttendance = () => {
       const res = await axios.get(
         `${
           import.meta.env.VITE_BACKEND_API
-        }/todays-attendence?user_id=${user_id}&currentDate=${currentDate}`
+        }/todays-attendence?user_id=${user_id}&currentDate=${currentDate}`,
+        { headers: { token: userToken } }
       );
       setTodaysAttendence(res?.data);
 
