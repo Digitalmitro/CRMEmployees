@@ -1371,22 +1371,18 @@ const checkinTime = (currentTime) => {
     const lateStart = moment(punchInDate).hours(10).minutes(40).seconds(0); // set to 10:40 AM same day
     return punchInDate.isSameOrAfter(lateStart);
   } else if (NewProfile?.type === "Night") {
-    // Night shift starts at 8:10 PM, but can roll over into the next day
-    const lateStart = moment(punchInDate).hours(20).minutes(10).seconds(0); // set to 8:10 PM same day
-    const lateEnd = moment(punchInDate)
-      .add(1, "day")
-      .hours(8)
-      .minutes(10)
-      .seconds(0); // set late end time to 8:10 AM next day
+    // Night shift starts at 8:10 PM, but employees can punch in earlier
+    const shiftStart = moment(punchInDate).hours(19).minutes(0).seconds(0); // shift start time (e.g., 7:00 PM)
+    const lateStart = moment(punchInDate).hours(20).minutes(10).seconds(0); // late start at 8:10 PM same day
+    const lateEnd = moment(punchInDate).add(1, "day").hours(8).minutes(10).seconds(0); // set late end time to 8:10 AM next day
 
     console.log("PUNCH IN TIME -->", punchInDate.format());
+    console.log("SHIFT START -->", shiftStart.format());
     console.log("LATE START -->", lateStart.format());
     console.log("LATE END -->", lateEnd.format());
 
-    // Check if punchInDate falls between lateStart and lateEnd (spanning two days)
-    return (
-      punchInDate.isSameOrAfter(lateStart) || punchInDate.isBefore(lateEnd)
-    );
+    // Check if punchInDate falls within the valid range of the night shift
+    return punchInDate.isBetween(shiftStart, lateEnd, null, '[)');
   }
 
   return false;
