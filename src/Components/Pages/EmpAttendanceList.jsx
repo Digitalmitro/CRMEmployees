@@ -38,8 +38,38 @@ const EmpAttendanceList = () => {
     }
   }
 
+  const [approvedLeaves, setApprovedLeaves] = useState([]);
+
+  const fetchApprovedLeaves = async () => {
+    // Get the current year
+    const currentYear = new Date().getFullYear();
+
+    await axios
+      .get(
+        `${
+          import.meta.env.VITE_BACKEND_API
+        }/approved-leaves/${user_id}?month=${selectedMonth}&year=${currentYear}`,
+        {
+          headers: { token: userToken },
+        }
+      )
+      .then((res) => {
+        console.log(res.data);
+        if (res.data.length > 0) {
+          // Map the leave dates from the response
+          const leaveDates = res.data.map((el) => el.ConcernDate);
+          // Update the state with the approved leaves
+          setApprovedLeaves(leaveDates);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching approved leaves:", error);
+      });
+  };
+
   useEffect(() => {
     getEmpAttendanceData();
+    fetchApprovedLeaves();
   }, [selectedMonth, date]);
 
   const formatTime = (date) => {
@@ -107,13 +137,21 @@ const EmpAttendanceList = () => {
       ) {
         if (isWeekday(m)) {
           const formattedDate = m.format("YYYY-MM-DD");
-          const isAbsent = !attendanceList.some(
-            (entry) =>
-              moment(entry.currentDate).format("YYYY-MM-DD") === formattedDate
+
+          // Convert approvedLeaves to Moment objects for comparison
+          const isOnApprovedLeave = approvedLeaves.some((leave) =>
+            moment(leave, "MMMM Do YYYY").isSame(m, "day")
           );
 
-          if (isAbsent) {
-            absentDates.add(formattedDate);
+          if (!isOnApprovedLeave) {
+            const isAbsent = !attendanceList.some(
+              (entry) =>
+                moment(entry.currentDate).format("YYYY-MM-DD") === formattedDate
+            );
+
+            if (isAbsent) {
+              absentDates.add(formattedDate);
+            }
           }
         }
       }
@@ -196,6 +234,23 @@ const EmpAttendanceList = () => {
           </div>
         </div>
         <hr />
+
+        {/* Display approved leaves */}
+        {approvedLeaves.length > 0 && (
+          <div className="approved-leaves-section">
+            <h6>Approved Leaves:</h6>
+            <select
+              className="form-select"
+              style={{ width: "10rem", marginBottom: "1rem" }}
+            >
+              {approvedLeaves.map((leave, index) => (
+                <option key={index} value={leave}>
+                  {moment(leave, "MMMM Do YYYY").format("MMM Do, YYYY")}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div class="tab-content" id="pills-tabContent">
           <div

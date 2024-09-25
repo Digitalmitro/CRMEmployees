@@ -1108,7 +1108,12 @@ const EmployeeAttendance = () => {
             label="Date"
             rules={[{ required: true, message: "Please select a date" }]}
           >
-            <DatePicker />
+            <DatePicker 
+             disabledDate={(current) => {
+              // Disable all dates before today
+              return current && current < moment().startOf('day');
+            }}
+            />
           </Form.Item>
 
           <Form.Item>
