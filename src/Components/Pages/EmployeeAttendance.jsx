@@ -404,6 +404,7 @@ const EmployeeAttendance = () => {
     let isLate;
     if (attendanceInfo.firstPunchIn === null) {
       isLate = checkinTime(currentTime);
+      console.log("IS LATE -->", isLate);
     }
 
     const currentDate = istDate.toISOString();
@@ -1365,24 +1366,32 @@ function getCurrentDateFormatted() {
 }
 
 const checkinTime = (currentTime) => {
-  const punchInDate = moment(currentTime); // current punch-in time using moment
+  // Convert currentTime to local time from UTC if it's in UTC
+  const punchInDate = moment(currentTime);
 
   if (NewProfile?.type === "Day") {
-    const lateStart = moment(punchInDate).hours(10).minutes(40).seconds(0); // set to 10:40 AM same day
+    const lateStart = moment(punchInDate).hours(10).minutes(40).seconds(0); // 10:40 AM
     return punchInDate.isSameOrAfter(lateStart);
   } else if (NewProfile?.type === "Night") {
-    // Night shift starts at 8:10 PM, but employees can punch in earlier
-    const shiftStart = moment(punchInDate).hours(19).minutes(0).seconds(0); // shift start time (e.g., 7:00 PM)
-    const lateStart = moment(punchInDate).hours(20).minutes(10).seconds(0); // late start at 8:10 PM same day
-    const lateEnd = moment(punchInDate).add(1, "day").hours(8).minutes(10).seconds(0); // set late end time to 8:10 AM next day
+    // Night shift: allow punch-in from 7:00 PM to 8:10 AM next day
+    const shiftStart = moment(punchInDate).hours(19).minutes(0).seconds(0); // 7:00 PM
+    const lateStart = moment(punchInDate).hours(20).minutes(10).seconds(0); // Late start at 8:10 PM
+    const lateEnd = moment(punchInDate)
+      .add(1, "day")
+      .hours(8)
+      .minutes(10)
+      .seconds(0); // 8:10 AM next day
 
-    console.log("PUNCH IN TIME -->", punchInDate.format());
     console.log("SHIFT START -->", shiftStart.format());
     console.log("LATE START -->", lateStart.format());
     console.log("LATE END -->", lateEnd.format());
 
-    // Check if punchInDate falls within the valid range of the night shift
-    return punchInDate.isBetween(shiftStart, lateEnd, null, '[)');
+    // Punch is late if it's after 8:10 PM or after the shift end time (8:10 AM next day)
+    const isLate =
+      punchInDate.isAfter(lateStart) && punchInDate.isBefore(lateEnd);
+    console.log("IS LATE -->", isLate);
+
+    return isLate;
   }
 
   return false;
