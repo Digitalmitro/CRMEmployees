@@ -276,7 +276,10 @@ const TransferDrawer = ({ open, onClose, refreshData }) => {
                     }}
                     getPopupContainer={(trigger) => trigger.parentElement}
                     value={calldate}
-                    onChange={(e) => setCalldate(e.target.value)}
+                    onChange={(date) => {
+                      console.log(date);
+                      setCalldate(date);
+                    }}
                   />
                 </Form.Item>
               </Col>
