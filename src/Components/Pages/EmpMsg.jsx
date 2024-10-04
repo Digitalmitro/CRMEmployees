@@ -10,8 +10,7 @@ const ENDPOINT = import.meta.env.VITE_BACKEND_API; // Update with your server en
 let socket;
 
 const EmpMsg = () => {
-
-  const messagesEndRef = useRef(null); 
+  const messagesEndRef = useRef(null);
 
   const userToken = localStorage.getItem("userToken");
   const user = JSON.parse(localStorage.getItem("user"));
@@ -35,7 +34,6 @@ const EmpMsg = () => {
     user_id: userId,
   });
 
-  
   // Scroll to the bottom function
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
@@ -46,7 +44,7 @@ const EmpMsg = () => {
     scrollToBottom(); // Scroll to bottom on page load or when messages change
   }, [messages]);
 
-
+  console.log("CHANGING -->", formData.user_id);
   // Establish socket connection only when an employee is selected
   useEffect(() => {
     if (formData.user_id) {
@@ -77,36 +75,32 @@ const EmpMsg = () => {
         name: formData.name,
         email: formData.email,
         senderId: userId,
-        receiverId: "66c2e95d90490ca5dfc00764", 
+        receiverId: "66e9b88d3d51ad4d90f51e06",
         message: input,
-        status:'false',
+        status: "false",
         role: "user",
         time: curTime,
         userId: formData.user_id,
       };
-
-      try{
-        console.log("hereeeee",newMessage)
-       const res =  axios
-        .post(
-          `${import.meta.env.VITE_BACKEND_API}/notifymessage`, {
-            senderName:formData.name,
+      setMessages([...messages, newMessage]);
+      socket.emit("sendMsg", newMessage);
+      try {
+        console.log("hereeeee", newMessage);
+        const res = axios.post(
+          `${import.meta.env.VITE_BACKEND_API}/notifymessage`,
+          {
+            senderName: formData.name,
             Date: moment().format("MMMM Do YYYY, h:mm:ss a"),
-            status:false,
+            status: false,
             message: input,
             senderId: userId,
-            receiverId: "66c2e95d90490ca5dfc00764"
+            receiverId: "66e9b88d3d51ad4d90f51e06",
           }
-          )
-          console.log("res", res)
-    
-       }catch(err){
-        console.log(err)
-       }
-
-      setMessages([...messages, newMessage]);
-   socket.emit("sendMsg", newMessage)
-  
+        );
+        console.log("res", res);
+      } catch (err) {
+        console.log(err);
+      }
       setInput("");
     }
   };
@@ -123,8 +117,9 @@ const EmpMsg = () => {
         const chatData = res.data.chatData;
 
         if (chatData.length > 0) {
-        
-          const filterStatus = res.data.chatData[0].messages.filter((msg)=> msg.status  &&  msg.status === 'false')
+          const filterStatus = res.data.chatData[0].messages.filter(
+            (msg) => msg.status && msg.status === "false"
+          );
           setMessages(res.data.chatData[0].messages);
         } else {
           setMessages([]);
@@ -140,10 +135,8 @@ const EmpMsg = () => {
   };
 
   useEffect(() => {
-      getChatData(formData.user_id);
+    getChatData(formData.user_id);
   }, [formData.user_id]);
-
-
 
   const typingHandler = (e) => {
     setInput(e.target.value);
@@ -207,18 +200,15 @@ const EmpMsg = () => {
         />
       </div> */}
       <div className="chat-container" style={styles.chatContainer}>
-          <>
-            <div
-              className="messages-container"
-              style={styles.messagesContainer}
-            >
-              {loading ? (
-                <Spin tip="Loading..." style={styles.spinner} />
-              ) : (
-                messages?.map((item, index) => {
-                  // console.log(item);
-                  return (
-                    <>
+        <>
+          <div className="messages-container" style={styles.messagesContainer}>
+            {loading ? (
+              <Spin tip="Loading..." style={styles.spinner} />
+            ) : (
+              messages?.map((item, index) => {
+                // console.log(item);
+                return (
+                  <>
                     <div
                       key={index}
                       className={
@@ -235,37 +225,38 @@ const EmpMsg = () => {
                       <p style={styles.senderName}>
                         <strong>{item.name}</strong>
                       </p>
-                     {/* <div  className="d-flex align-items-end gap-2 justify-content-between"> */}
-                     <p style={styles.messageText}>{item.message}</p>
-                     <p style={styles.messageTime}>{moment(item.time).format("DD/MM/YYYY HH:mm")}</p>
-                     {/* </div> */} 
+                      {/* <div  className="d-flex align-items-end gap-2 justify-content-between"> */}
+                      <p style={styles.messageText}>{item.message}</p>
+                      <p style={styles.messageTime}>
+                        {moment(item.time).format("DD/MM/YYYY HH:mm")}
+                      </p>
+                      {/* </div> */}
                     </div>
-                    <div ref={messagesEndRef} /> 
-
-                    </>
-                  );
-                })
-              )}
-            </div>
-            <div className="input-container" style={styles.inputContainer}>
-              <Input
-                placeholder="Type your message here..."
-                value={input}
-                onChange={typingHandler}
-                onPressEnter={handleSendMessage}
-                style={styles.inputField}
-              />
-              {isTyping && <p style={styles.typingIndicator}>Typing...</p>}
-              <Button
-                type="primary"
-                onClick={handleSendMessage}
-                style={styles.sendButton}
-              >
-                Send
-              </Button>
-            </div>
-          </> 
-          <div ref={messagesEndRef} /> 
+                    <div ref={messagesEndRef} />
+                  </>
+                );
+              })
+            )}
+          </div>
+          <div className="input-container" style={styles.inputContainer}>
+            <Input
+              placeholder="Type your message here..."
+              value={input}
+              onChange={typingHandler}
+              onPressEnter={handleSendMessage}
+              style={styles.inputField}
+            />
+            {isTyping && <p style={styles.typingIndicator}>Typing...</p>}
+            <Button
+              type="primary"
+              onClick={handleSendMessage}
+              style={styles.sendButton}
+            >
+              Send
+            </Button>
+          </div>
+        </>
+        <div ref={messagesEndRef} />
       </div>
     </div>
   );
@@ -304,13 +295,13 @@ const styles = {
     flexGrow: 1,
     padding: "20px",
     backgroundColor: "#f5f5f5",
-    height:"80vh",
+    height: "80vh",
   },
   messagesContainer: {
     display: "flex",
     flexDirection: "column",
     overflowY: "auto",
-    overflowX:"hidden",
+    overflowX: "hidden",
     padding: "10px",
     marginBottom: "20px",
     scrollbarWidth: "thin",
@@ -344,7 +335,6 @@ const styles = {
     color: "#757575",
     textAlign: "right",
     margin: 0,
-    
   },
   inputContainer: {
     display: "flex",
@@ -373,6 +363,5 @@ const styles = {
     marginLeft: "10px",
   },
 };
-
 
 export default EmpMsg;
